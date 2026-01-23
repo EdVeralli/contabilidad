@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+    <span class="text-muted">{{ empresa.nombre if empresa else 'Sin Empresa Seleccionada' }}</span>
+</div>
+
+<div class="row">
+    <!-- Quick Stats -->
+    <div class="col-md-3 mb-4">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1">Cuentas</h6>
+                        <h3 class="mb-0" id="stat-cuentas">-</h3>
+                    </div>
+                    <i class="bi bi-list-nested display-6 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{{ url_for('cuentas.index') }}" class="text-white small">Ver Plan de Cuentas <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1">Asientos</h6>
+                        <h3 class="mb-0" id="stat-asientos">-</h3>
+                    </div>
+                    <i class="bi bi-journal-text display-6 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{{ url_for('asientos.index') }}" class="text-white small">Ver Asientos <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1">Ultimo Asiento</h6>
+                        <h3 class="mb-0" id="stat-ultimo">-</h3>
+                    </div>
+                    <i class="bi bi-calendar-check display-6 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-warning text-dark h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1">Ejercicio</h6>
+                        <h3 class="mb-0" id="stat-ejercicio">-</h3>
+                    </div>
+                    <i class="bi bi-calendar-range display-6 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Acciones Rapidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('asientos.create') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-circle"></i> Nuevo Asiento
+                    </a>
+                    <a href="{{ url_for('cuentas.create') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-circle"></i> Nueva Cuenta
+                    </a>
+                    <a href="{{ url_for('informes.libro_diario') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-file-text"></i> Ver Libro Diario
+                    </a>
+                    <a href="{{ url_for('informes.balance_general') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-pie-chart"></i> Ver Balance General
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Ultimos Movimientos</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm" id="ultimos-asientos">
+                        <thead>
+                            <tr>
+                                <th>Nro</th>
+                                <th>Fecha</th>
+                                <th>Leyenda</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Cargando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Load dashboard stats via AJAX
+    $.get('{{ url_for("asientos.api_stats") }}', function(data) {
+        $('#stat-cuentas').text(data.total_cuentas || 0);
+        $('#stat-asientos').text(data.total_asientos || 0);
+        $('#stat-ultimo').text(data.ultimo_asiento || '-');
+        $('#stat-ejercicio').text(data.ejercicio_actual || '-');
+
+        // Load recent entries
+        if (data.ultimos_asientos && data.ultimos_asientos.length > 0) {
+            var tbody = $('#ultimos-asientos tbody');
+            tbody.empty();
+            data.ultimos_asientos.forEach(function(asiento) {
+                tbody.append(
+                    '<tr>' +
+                    '<td>' + asiento.numero + '</td>' +
+                    '<td>' + asiento.fecha + '</td>' +
+                    '<td>' + (asiento.leyenda || '-') + '</td>' +
+                    '<td class="text-end">' + formatCurrency(asiento.total) + '</td>' +
+                    '</tr>'
+                );
+            });
+        } else {
+            $('#ultimos-asientos tbody').html('<tr><td colspan="4" class="text-center text-muted">Sin movimientos</td></tr>');
+        }
+    }).fail(function() {
+        $('#stat-cuentas').text('0');
+        $('#stat-asientos').text('0');
+    });
+});
+</script>
+{% endblock %}

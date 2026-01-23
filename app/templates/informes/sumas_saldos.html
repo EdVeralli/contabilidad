@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Sumas y Saldos - {{ app_name }}{% endblock %}
+
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <h2><i class="bi bi-calculator"></i> Sumas y Saldos</h2>
+    <button onclick="window.print()" class="btn btn-outline-secondary">
+        <i class="bi bi-printer"></i> Imprimir
+    </button>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4 no-print">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Fecha de Corte</label>
+                <input type="date" class="form-control" name="fecha_hasta"
+                       value="{{ fecha_hasta.strftime('%Y-%m-%d') }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="incluir_sin_mov"
+                           value="true" {{ 'checked' if incluir_sin_mov }}>
+                    <label class="form-check-label">Incluir cuentas sin movimiento</label>
+                </div>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Generar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Report -->
+<div class="card">
+    <div class="card-header text-center">
+        <h4 class="mb-0">BALANCE DE SUMAS Y SALDOS</h4>
+        <small>Al {{ fecha_hasta.strftime('%d/%m/%Y') }}</small>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th rowspan="2" style="width: 100px;">Cuenta</th>
+                        <th rowspan="2">Nombre</th>
+                        <th colspan="2" class="text-center">SUMAS</th>
+                        <th colspan="2" class="text-center">SALDOS</th>
+                    </tr>
+                    <tr>
+                        <th class="text-end" style="width: 120px;">Debe</th>
+                        <th class="text-end" style="width: 120px;">Haber</th>
+                        <th class="text-end" style="width: 120px;">Deudor</th>
+                        <th class="text-end" style="width: 120px;">Acreedor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cuenta in reporte.cuentas %}
+                    <tr>
+                        <td>{{ cuenta.cuenta }}</td>
+                        <td>{{ cuenta.nombre }}</td>
+                        <td class="text-end">{{ "{:,.2f}".format(cuenta.debe) }}</td>
+                        <td class="text-end">{{ "{:,.2f}".format(cuenta.haber) }}</td>
+                        <td class="text-end">
+                            {% if cuenta.saldo_deudor > 0 %}{{ "{:,.2f}".format(cuenta.saldo_deudor) }}{% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if cuenta.saldo_acreedor > 0 %}{{ "{:,.2f}".format(cuenta.saldo_acreedor) }}{% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No hay datos para mostrar.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-dark">
+                    <tr>
+                        <th colspan="2" class="text-end">TOTALES:</th>
+                        <th class="text-end">{{ "{:,.2f}".format(reporte.total_debe) }}</th>
+                        <th class="text-end">{{ "{:,.2f}".format(reporte.total_haber) }}</th>
+                        <th class="text-end">{{ "{:,.2f}".format(reporte.total_saldo_deudor) }}</th>
+                        <th class="text-end">{{ "{:,.2f}".format(reporte.total_saldo_acreedor) }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Validation Message -->
+        {% set diff_sumas = reporte.total_debe - reporte.total_haber %}
+        {% set diff_saldos = reporte.total_saldo_deudor - reporte.total_saldo_acreedor %}
+        <div class="mt-3">
+            {% if diff_sumas|abs < 0.01 and diff_saldos|abs < 0.01 %}
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle"></i> El balance esta cuadrado correctamente.
+            </div>
+            {% else %}
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle"></i> El balance presenta diferencias.
+                {% if diff_sumas|abs >= 0.01 %}
+                <br>Diferencia en Sumas: {{ "{:,.2f}".format(diff_sumas) }}
+                {% endif %}
+                {% if diff_saldos|abs >= 0.01 %}
+                <br>Diferencia en Saldos: {{ "{:,.2f}".format(diff_saldos) }}
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

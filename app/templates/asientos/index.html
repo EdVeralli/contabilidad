@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Asientos Contables - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-journal-text"></i> Asientos Contables</h2>
+    <a href="{{ url_for('asientos.create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nuevo Asiento
+    </a>
+</div>
+
+<!-- Search Form -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-2">
+                <label class="form-label">Desde</label>
+                <input type="date" class="form-control" name="fecha_desde"
+                       value="{{ form.fecha_desde.data.strftime('%Y-%m-%d') if form.fecha_desde.data else '' }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Hasta</label>
+                <input type="date" class="form-control" name="fecha_hasta"
+                       value="{{ form.fecha_hasta.data.strftime('%Y-%m-%d') if form.fecha_hasta.data else '' }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Numero</label>
+                {{ form.numero(class="form-control", placeholder="Nro") }}
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Cuenta</label>
+                {{ form.cuenta(class="form-control", placeholder="Codigo") }}
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Leyenda</label>
+                {{ form.leyenda(class="form-control", placeholder="Buscar...") }}
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-secondary w-100">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Entries Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Nro</th>
+                        <th style="width: 100px;">Fecha</th>
+                        <th>Leyenda</th>
+                        <th class="text-end">Debe</th>
+                        <th class="text-end">Haber</th>
+                        <th class="text-center" style="width: 100px;">Estado</th>
+                        <th class="text-center" style="width: 120px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asiento in asientos.items %}
+                    <tr class="{{ 'table-secondary' if asiento.estado.value == 'ANULADO' }}">
+                        <td>
+                            <a href="{{ url_for('asientos.view', id=asiento.id) }}">
+                                {{ asiento.numero }}
+                            </a>
+                            {% if asiento.es_apertura %}
+                                <span class="badge bg-info">AP</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ asiento.fecha.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ asiento.leyenda_global or '-' }}</td>
+                        <td class="text-end">{{ "{:,.2f}".format(asiento.total_debe) }}</td>
+                        <td class="text-end">{{ "{:,.2f}".format(asiento.total_haber) }}</td>
+                        <td class="text-center">
+                            {% if asiento.estado.value == 'ACTIVO' %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Anulado</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('asientos.view', id=asiento.id) }}"
+                                   class="btn btn-outline-info" title="Ver">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if asiento.estado.value == 'ACTIVO' %}
+                                <a href="{{ url_for('asientos.edit', id=asiento.id) }}"
+                                   class="btn btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">No se encontraron asientos</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if asientos.pages > 1 %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if asientos.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('asientos.index', page=asientos.prev_num, **request.args) }}">
+                        Anterior
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for page_num in asientos.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {{ 'active' if page_num == asientos.page }}">
+                            <a class="page-link" href="{{ url_for('asientos.index', page=page_num, **request.args) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if asientos.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('asientos.index', page=asientos.next_num, **request.args) }}">
+                        Siguiente
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

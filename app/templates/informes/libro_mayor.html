@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Libro Mayor - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cuenta-header {
+        background-color: #f8f9fa;
+        border-left: 4px solid #2c3e50;
+    }
+    @media print {
+        .cuenta-block {
+            break-inside: avoid;
+        }
+        .cuenta-header {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <h2><i class="bi bi-file-earmark-text"></i> Libro Mayor</h2>
+    <button onclick="window.print()" class="btn btn-outline-secondary">
+        <i class="bi bi-printer"></i> Imprimir
+    </button>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4 no-print">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-2">
+                <label class="form-label">Desde</label>
+                <input type="date" class="form-control" name="fecha_desde"
+                       value="{{ fecha_desde.strftime('%Y-%m-%d') }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Hasta</label>
+                <input type="date" class="form-control" name="fecha_hasta"
+                       value="{{ fecha_hasta.strftime('%Y-%m-%d') }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Cuenta Desde</label>
+                <input type="text" class="form-control" name="cuenta_desde"
+                       value="{{ cuenta_desde }}" placeholder="Ej: 1">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Cuenta Hasta</label>
+                <input type="text" class="form-control" name="cuenta_hasta"
+                       value="{{ cuenta_hasta }}" placeholder="Ej: 3">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Generar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Report -->
+<div class="card">
+    <div class="card-header text-center">
+        <h4 class="mb-0">LIBRO MAYOR</h4>
+        <small>Periodo: {{ fecha_desde.strftime('%d/%m/%Y') }} al {{ fecha_hasta.strftime('%d/%m/%Y') }}</small>
+    </div>
+    <div class="card-body">
+        {% for cuenta in reporte %}
+        <div class="cuenta-block mb-4">
+            <!-- Account Header -->
+            <div class="cuenta-header p-2 mb-2">
+                <strong>{{ cuenta.cuenta }} - {{ cuenta.nombre }}</strong>
+                <span class="float-end badge {{ 'bg-primary' if cuenta.tipo_saldo == 'D' else 'bg-warning' }}">
+                    {{ 'Deudor' if cuenta.tipo_saldo == 'D' else 'Acreedor' }}
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 100px;">Fecha</th>
+                            <th style="width: 80px;">Asiento</th>
+                            <th>Leyenda</th>
+                            <th class="text-end" style="width: 120px;">Debe</th>
+                            <th class="text-end" style="width: 120px;">Haber</th>
+                            <th class="text-end" style="width: 130px;">Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Opening Balance -->
+                        <tr class="table-secondary">
+                            <td colspan="3"><em>Saldo Anterior</em></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">{{ "{:,.2f}".format(cuenta.saldo_anterior) }}</td>
+                        </tr>
+
+                        {% for mov in cuenta.movimientos %}
+                        <tr>
+                            <td>{{ mov.fecha.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('asientos.view', id=mov.asiento) }}">
+                                    {{ mov.asiento }}
+                                </a>
+                            </td>
+                            <td>{{ mov.leyenda[:40] }}{% if mov.leyenda|length > 40 %}...{% endif %}</td>
+                            <td class="text-end">
+                                {% if mov.debe > 0 %}{{ "{:,.2f}".format(mov.debe) }}{% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if mov.haber > 0 %}{{ "{:,.2f}".format(mov.haber) }}{% endif %}
+                            </td>
+                            <td class="text-end {{ 'text-danger' if mov.saldo < 0 }}">
+                                {{ "{:,.2f}".format(mov.saldo) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="3" class="text-end">TOTALES:</th>
+                            <th class="text-end">{{ "{:,.2f}".format(cuenta.total_debe) }}</th>
+                            <th class="text-end">{{ "{:,.2f}".format(cuenta.total_haber) }}</th>
+                            <th class="text-end {{ 'text-danger' if cuenta.saldo_final < 0 }}">
+                                {{ "{:,.2f}".format(cuenta.saldo_final) }}
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-center text-muted">No hay cuentas con movimientos en el periodo seleccionado.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

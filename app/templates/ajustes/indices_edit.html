@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Indices - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-pencil"></i>
+                    Editar Indices - Tabla {{ codigo }} ({{ anio }})
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Titulo de la Tabla</label>
+                        <input type="text" class="form-control" name="titulo"
+                               value="{{ tabla.titulo if tabla else '' }}"
+                               placeholder="Ej: IPC Nacional">
+                    </div>
+
+                    <h6 class="mt-4 mb-3">Indices Mensuales</h6>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mes</th>
+                                    <th>Indice</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in range(12) %}
+                                <tr>
+                                    <td>{{ meses[i] }}</td>
+                                    <td>
+                                        <input type="number" step="0.000001"
+                                               class="form-control form-control-sm"
+                                               name="indice_{{ '%02d'|format(i+1) }}"
+                                               value="{{ '{:.6f}'.format(indices[i]|float) if indices[i] else '0.000000' }}">
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('ajustes.indices', anio=anio) }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

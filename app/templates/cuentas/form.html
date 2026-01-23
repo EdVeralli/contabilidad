@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-{% if cuenta %}pencil{% else %}plus-circle{% endif %}"></i>
+                    {{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="cuenta" class="form-label">Codigo de Cuenta *</label>
+                            {{ form.cuenta(class="form-control", maxlength="10") }}
+                            {% if form.cuenta.errors %}
+                                <div class="text-danger small">{{ form.cuenta.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="nivel" class="form-label">Nivel *</label>
+                            {{ form.nivel(class="form-select") }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre *</label>
+                        {{ form.nombre(class="form-control", maxlength="60") }}
+                        {% if form.nombre.errors %}
+                            <div class="text-danger small">{{ form.nombre.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="imputable" class="form-label">Imputable</label>
+                            {{ form.imputable(class="form-select") }}
+                            <small class="text-muted">Las cuentas imputables reciben asientos directamente</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="tipo_saldo" class="form-label">Tipo de Saldo</label>
+                            {{ form.tipo_saldo(class="form-select") }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="monetaria" class="form-label">Monetaria</label>
+                            {{ form.monetaria(class="form-select") }}
+                            <small class="text-muted">Las cuentas monetarias no se ajustan por inflacion</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="ajustable" class="form-label">Ajustable</label>
+                            {{ form.ajustable(class="form-select") }}
+                            <small class="text-muted">Define si se aplica ajuste por inflacion</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            {{ form.activa(class="form-check-input") }}
+                            <label class="form-check-label" for="activa">Cuenta Activa</label>
+                        </div>
+                    </div>
+
+                    {% if cuenta %}
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Ultimo Saldo:</strong> {{ "{:,.2f}".format(cuenta.ultimo_saldo|float) if cuenta.ultimo_saldo else '0.00' }}<br>
+                            <strong>Ultimo Movimiento:</strong> {{ cuenta.ultimo_movimiento.strftime('%d/%m/%Y') if cuenta.ultimo_movimiento else 'Sin movimientos' }}
+                        </small>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('cuentas.index') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

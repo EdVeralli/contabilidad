@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Balance General - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nivel-1 { font-weight: bold; background-color: #e9ecef; }
+    .nivel-2 { font-weight: 600; }
+    .cuenta-imputable { font-style: normal; }
+    .cuenta-no-imputable { font-weight: 600; }
+    @media print {
+        .nivel-1 {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <h2><i class="bi bi-pie-chart"></i> Balance General</h2>
+    <button onclick="window.print()" class="btn btn-outline-secondary">
+        <i class="bi bi-printer"></i> Imprimir
+    </button>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4 no-print">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Fecha de Corte</label>
+                <input type="date" class="form-control" name="fecha_hasta"
+                       value="{{ fecha_hasta.strftime('%Y-%m-%d') }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Generar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Report -->
+<div class="card">
+    <div class="card-header text-center">
+        <h4 class="mb-0">BALANCE GENERAL</h4>
+        <small>Al {{ fecha_hasta.strftime('%d/%m/%Y') }}</small>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 100px;">Cuenta</th>
+                        <th>Nombre</th>
+                        <th class="text-end" style="width: 150px;">Saldo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cuenta in reporte.cuentas %}
+                    <tr class="nivel-{{ cuenta.nivel }} {{ 'cuenta-imputable' if cuenta.imputable else 'cuenta-no-imputable' }}">
+                        <td style="padding-left: {{ cuenta.indent }}px;">
+                            {{ cuenta.cuenta }}
+                        </td>
+                        <td style="padding-left: {{ cuenta.indent }}px;">
+                            {{ cuenta.nombre }}
+                        </td>
+                        <td class="text-end {{ 'text-danger' if cuenta.saldo < 0 }}">
+                            {% if cuenta.imputable or cuenta.nivel <= 2 %}
+                                {{ "{:,.2f}".format(cuenta.saldo) }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary by main categories -->
+        <hr>
+        <h5 class="mt-4">Resumen por Rubros Principales</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Rubro</th>
+                        <th class="text-end">Saldo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for codigo, datos in reporte.totales.items() %}
+                    <tr>
+                        <td><strong>{{ codigo }}</strong> - {{ datos.nombre }}</td>
+                        <td class="text-end {{ 'text-danger' if datos.saldo < 0 }}">
+                            {{ "{:,.2f}".format(datos.saldo) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Accounting equation validation -->
+        {% set activo = reporte.totales.get('1', {'saldo': 0}).saldo %}
+        {% set pasivo = reporte.totales.get('2', {'saldo': 0}).saldo %}
+        {% set patrimonio = reporte.totales.get('3', {'saldo': 0}).saldo %}
+        {% set resultado = activo - (pasivo|abs + patrimonio|abs) %}
+
+        <div class="alert {{ 'alert-success' if resultado|abs < 0.01 else 'alert-warning' }} mt-3">
+            <h6>Ecuacion Patrimonial</h6>
+            <p class="mb-0">
+                <strong>Activo:</strong> {{ "{:,.2f}".format(activo) }} =
+                <strong>Pasivo:</strong> {{ "{:,.2f}".format(pasivo|abs) }} +
+                <strong>Patrimonio:</strong> {{ "{:,.2f}".format(patrimonio|abs) }}
+                {% if resultado|abs >= 0.01 %}
+                <br><span class="text-danger">Diferencia: {{ "{:,.2f}".format(resultado) }}</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

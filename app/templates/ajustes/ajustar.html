@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Ajuste por Inflacion - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-sliders"></i> Ajuste por Inflacion</h2>
+</div>
+
+<!-- Parameters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Fecha de Corte</label>
+                <input type="date" class="form-control" name="fecha_hasta"
+                       value="{{ fecha_hasta.strftime('%Y-%m-%d') }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Tabla de Indices</label>
+                <select name="tabla" class="form-select">
+                    <option value="A" {{ 'selected' if codigo_tabla == 'A' }}>Tabla A</option>
+                    <option value="B" {{ 'selected' if codigo_tabla == 'B' }}>Tabla B</option>
+                    <option value="C" {{ 'selected' if codigo_tabla == 'C' }}>Tabla C</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-calculator"></i> Calcular
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results -->
+{% if ajustes.cuentas %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Resultado del Calculo</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Cuenta</th>
+                        <th>Nombre</th>
+                        <th class="text-end">Saldo Original</th>
+                        <th class="text-end">Ajuste</th>
+                        <th class="text-end">Saldo Ajustado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cuenta in ajustes.cuentas %}
+                    <tr>
+                        <td>{{ cuenta.cuenta }}</td>
+                        <td>{{ cuenta.nombre }}</td>
+                        <td class="text-end">{{ "{:,.2f}".format(cuenta.saldo_original) }}</td>
+                        <td class="text-end {{ 'text-success' if cuenta.ajuste_total > 0 else 'text-danger' if cuenta.ajuste_total < 0 }}">
+                            {{ "{:,.2f}".format(cuenta.ajuste_total) }}
+                        </td>
+                        <td class="text-end">{{ "{:,.2f}".format(cuenta.saldo_ajustado) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-dark">
+                    <tr>
+                        <th colspan="3" class="text-end">TOTALES:</th>
+                        <th class="text-end">
+                            Deudor: {{ "{:,.2f}".format(ajustes.total_ajuste_deudor) }}<br>
+                            Acreedor: {{ "{:,.2f}".format(ajustes.total_ajuste_acreedor) }}
+                        </th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <th colspan="3" class="text-end">REI (Resultado por Exposicion a la Inflacion):</th>
+                        <th class="text-end {{ 'text-success' if ajustes.rei > 0 else 'text-danger' if ajustes.rei < 0 }}">
+                            {{ "{:,.2f}".format(ajustes.rei) }}
+                        </th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Generate Entry Form -->
+        <div class="card mt-4">
+            <div class="card-header bg-warning">
+                <h6 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Generar Asiento de Ajuste</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('ajustes.generar_asiento_ajuste') }}">
+                    <input type="hidden" name="fecha_hasta" value="{{ fecha_hasta.strftime('%Y-%m-%d') }}">
+                    <input type="hidden" name="codigo_tabla" value="{{ codigo_tabla }}">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Cuenta REI (Resultado por Exposicion a la Inflacion)</label>
+                            <select name="cuenta_rei_id" class="form-select" required>
+                                <option value="">-- Seleccione cuenta REI --</option>
+                                {% for cuenta in cuentas_rei %}
+                                <option value="{{ cuenta.id }}">{{ cuenta.cuenta }} - {{ cuenta.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Seleccione la cuenta donde se registrara el resultado por inflacion</small>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <button type="submit" class="btn btn-warning"
+                                    onclick="return confirm('Esta seguro de generar el asiento de ajuste?')">
+                                <i class="bi bi-journal-plus"></i> Generar Asiento
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center text-muted py-5">
+        <i class="bi bi-calculator display-4"></i>
+        <p class="mt-3">
+            No hay cuentas ajustables con movimientos o no se encontraron indices de inflacion
+            para el periodo seleccionado.
+        </p>
+        <p>
+            Verifique que:
+            <ul class="text-start d-inline-block">
+                <li>Existan cuentas marcadas como "Ajustable = Si"</li>
+                <li>Esten cargados los indices de inflacion para el periodo</li>
+                <li>Las cuentas tengan movimientos</li>
+            </ul>
+        </p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

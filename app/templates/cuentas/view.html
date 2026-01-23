@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Cuenta {{ cuenta.cuenta }} - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-card-list"></i> Cuenta: {{ cuenta.cuenta }}</h2>
+    <div>
+        <a href="{{ url_for('cuentas.edit', id=cuenta.id) }}" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a href="{{ url_for('cuentas.index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Account Details -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Datos de la Cuenta</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless table-sm">
+                    <tr>
+                        <th>Codigo:</th>
+                        <td>{{ cuenta.cuenta }}</td>
+                    </tr>
+                    <tr>
+                        <th>Nombre:</th>
+                        <td>{{ cuenta.nombre }}</td>
+                    </tr>
+                    <tr>
+                        <th>Nivel:</th>
+                        <td>{{ cuenta.nivel }}</td>
+                    </tr>
+                    <tr>
+                        <th>Imputable:</th>
+                        <td>
+                            {% if cuenta.imputable == 'S' %}
+                                <span class="badge bg-success">Si</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Monetaria:</th>
+                        <td>
+                            {% if cuenta.monetaria == 'S' %}
+                                <span class="badge bg-info">Si</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Ajustable:</th>
+                        <td>
+                            {% if cuenta.ajustable == 'S' %}
+                                <span class="badge bg-warning">Si</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Tipo Saldo:</th>
+                        <td>
+                            <span class="badge {{ 'bg-primary' if cuenta.tipo_saldo == 'D' else 'bg-warning' }}">
+                                {{ 'Deudor' if cuenta.tipo_saldo == 'D' else 'Acreedor' }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Estado:</th>
+                        <td>
+                            {% if cuenta.activa %}
+                                <span class="badge bg-success">Activa</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactiva</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Balance Info -->
+    <div class="col-md-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Informacion de Saldo</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted">Ultimo Saldo</h6>
+                            <h3 class="{{ 'text-success' if cuenta.ultimo_saldo and cuenta.ultimo_saldo > 0 else 'text-danger' if cuenta.ultimo_saldo and cuenta.ultimo_saldo < 0 else '' }}">
+                                {{ "{:,.2f}".format(cuenta.ultimo_saldo|float) if cuenta.ultimo_saldo else '0.00' }}
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted">Ultimo Movimiento</h6>
+                            <h5>{{ cuenta.ultimo_movimiento.strftime('%d/%m/%Y') if cuenta.ultimo_movimiento else '-' }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted">Inflacion Acumulada</h6>
+                            <h5>{{ "{:,.2f}".format(cuenta.inflacion_acumulada|float) if cuenta.inflacion_acumulada else '0.00' }}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Movements -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Ultimos Movimientos</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Asiento</th>
+                        <th>Leyenda</th>
+                        <th class="text-end">Debe</th>
+                        <th class="text-end">Haber</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for linea, asiento in movimientos %}
+                    <tr>
+                        <td>{{ asiento.fecha.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            <a href="{{ url_for('asientos.view', id=asiento.id) }}">
+                                {{ asiento.numero }}
+                            </a>
+                        </td>
+                        <td>{{ linea.leyenda or asiento.leyenda_global or '-' }}</td>
+                        <td class="text-end">
+                            {% if linea.debe and linea.debe > 0 %}
+                                {{ "{:,.2f}".format(linea.debe|float) }}
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if linea.haber and linea.haber > 0 %}
+                                {{ "{:,.2f}".format(linea.haber|float) }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">Sin movimientos registrados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if movimientos|length >= 50 %}
+        <div class="text-center mt-3">
+            <a href="{{ url_for('informes.libro_mayor') }}?cuenta={{ cuenta.cuenta }}" class="btn btn-outline-primary">
+                Ver todos los movimientos en Libro Mayor
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

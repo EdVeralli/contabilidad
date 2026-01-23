@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Libro Diario - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        .asiento-item {
+            break-inside: avoid;
+            margin-bottom: 10px !important;
+        }
+    }
+    .asiento-item {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <h2><i class="bi bi-file-text"></i> Libro Diario</h2>
+    <button onclick="window.print()" class="btn btn-outline-secondary">
+        <i class="bi bi-printer"></i> Imprimir
+    </button>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4 no-print">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Desde</label>
+                <input type="date" class="form-control" name="fecha_desde"
+                       value="{{ fecha_desde.strftime('%Y-%m-%d') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Hasta</label>
+                <input type="date" class="form-control" name="fecha_hasta"
+                       value="{{ fecha_hasta.strftime('%Y-%m-%d') }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Generar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Report -->
+<div class="card">
+    <div class="card-header text-center">
+        <h4 class="mb-0">LIBRO DIARIO</h4>
+        <small>Periodo: {{ fecha_desde.strftime('%d/%m/%Y') }} al {{ fecha_hasta.strftime('%d/%m/%Y') }}</small>
+    </div>
+    <div class="card-body">
+        {% for asiento in reporte.asientos %}
+        <div class="asiento-item">
+            <div class="row mb-2">
+                <div class="col-auto">
+                    <strong>Asiento N° {{ asiento.numero }}</strong>
+                    {% if asiento.es_apertura %}
+                        <span class="badge bg-info">Apertura</span>
+                    {% endif %}
+                </div>
+                <div class="col-auto">
+                    <strong>Fecha:</strong> {{ asiento.fecha.strftime('%d/%m/%Y') }}
+                </div>
+                {% if asiento.leyenda_global %}
+                <div class="col">
+                    <em>{{ asiento.leyenda_global }}</em>
+                </div>
+                {% endif %}
+            </div>
+
+            <table class="table table-sm table-borderless">
+                <tbody>
+                    {% for linea in asiento.lineas %}
+                    <tr>
+                        <td style="width: 100px;">{{ linea.cuenta }}</td>
+                        <td style="padding-left: {{ 20 if linea.haber > 0 else 0 }}px;">
+                            {{ linea.nombre }}
+                            {% if linea.leyenda %}
+                                <small class="text-muted">({{ linea.leyenda }})</small>
+                            {% endif %}
+                        </td>
+                        <td class="text-end" style="width: 120px;">
+                            {% if linea.debe > 0 %}{{ "{:,.2f}".format(linea.debe) }}{% endif %}
+                        </td>
+                        <td class="text-end" style="width: 120px;">
+                            {% if linea.haber > 0 %}{{ "{:,.2f}".format(linea.haber) }}{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center text-muted">No hay asientos en el periodo seleccionado.</p>
+        {% endfor %}
+
+        {% if reporte.asientos %}
+        <div class="table-responsive mt-4">
+            <table class="table table-bordered">
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="2" class="text-end">TOTALES GENERALES:</th>
+                        <th class="text-end" style="width: 120px;">{{ "{:,.2f}".format(reporte.total_debe) }}</th>
+                        <th class="text-end" style="width: 120px;">{{ "{:,.2f}".format(reporte.total_haber) }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

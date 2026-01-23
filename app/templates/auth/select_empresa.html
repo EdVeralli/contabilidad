@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Seleccionar Empresa - {{ app_name }}{% endblock %}
+
+{% block login_content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0"><i class="bi bi-building"></i> Seleccionar Empresa</h4>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted text-center mb-4">
+                        Seleccione la empresa con la que desea trabajar
+                    </p>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-sm" role="alert">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    {% if empresas %}
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        <div class="list-group mb-4">
+                            {% for empresa in empresas %}
+                            <label class="list-group-item list-group-item-action d-flex align-items-center">
+                                <input type="radio" name="empresa_id" value="{{ empresa.id }}"
+                                       class="form-check-input me-3" required
+                                       {% if loop.first %}checked{% endif %}>
+                                <div>
+                                    <strong>{{ empresa.codigo }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ empresa.nombre }}</small>
+                                    {% if empresa.comentario %}
+                                    <br><small class="text-muted fst-italic">{{ empresa.comentario }}</small>
+                                    {% endif %}
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right"></i> Ingresar
+                            </button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        No hay empresas disponibles. Contacte al administrador.
+                    </div>
+                    {% endif %}
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-box-arrow-left"></i> Cerrar Sesion
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center text-muted mt-3">
+                <small>{{ app_name }} - Usuario: {{ current_user.username }}</small>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- For authenticated users accessing from sidebar -->
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-building"></i> Cambiar Empresa</h5>
+            </div>
+            <div class="card-body">
+                {% if empresas %}
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="list-group mb-4">
+                        {% for empresa in empresas %}
+                        <label class="list-group-item list-group-item-action d-flex align-items-center
+                                      {% if session.empresa_id == empresa.id %}active{% endif %}">
+                            <input type="radio" name="empresa_id" value="{{ empresa.id }}"
+                                   class="form-check-input me-3"
+                                   {% if session.empresa_id == empresa.id %}checked{% endif %}>
+                            <div>
+                                <strong>{{ empresa.codigo }}</strong> - {{ empresa.nombre }}
+                                {% if empresa.comentario %}
+                                <br><small>{{ empresa.comentario }}</small>
+                                {% endif %}
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('auth.dashboard') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Seleccionar
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="alert alert-warning">
+                    No hay empresas disponibles.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

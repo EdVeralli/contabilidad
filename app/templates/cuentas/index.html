@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Plan de Cuentas - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-list-nested"></i> Plan de Cuentas</h2>
+    <a href="{{ url_for('cuentas.create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nueva Cuenta
+    </a>
+</div>
+
+<!-- Search Form -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="q" placeholder="Buscar por codigo o nombre..." value="{{ form.q.data or '' }}">
+            </div>
+            <div class="col-md-2">
+                {{ form.nivel(class="form-select") }}
+            </div>
+            <div class="col-md-2">
+                {{ form.imputable(class="form-select") }}
+            </div>
+            <div class="col-md-2">
+                {{ form.activa(class="form-select") }}
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-secondary w-100">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Accounts Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="cuentas-table">
+                <thead>
+                    <tr>
+                        <th>Cuenta</th>
+                        <th>Nombre</th>
+                        <th class="text-center">Nivel</th>
+                        <th class="text-center">Imp</th>
+                        <th class="text-center">Mon</th>
+                        <th class="text-center">Tipo</th>
+                        <th class="text-end">Ultimo Saldo</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center" style="width: 150px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cuenta in cuentas %}
+                    <tr class="{% if cuenta.imputable == 'S' %}fw-normal{% else %}fw-bold{% endif %}">
+                        <td>
+                            <span style="padding-left: {{ (cuenta.nivel - 1) * 20 }}px">
+                                {{ cuenta.cuenta }}
+                            </span>
+                        </td>
+                        <td>{{ cuenta.nombre }}</td>
+                        <td class="text-center">{{ cuenta.nivel }}</td>
+                        <td class="text-center">
+                            {% if cuenta.imputable == 'S' %}
+                                <span class="badge bg-success">Si</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if cuenta.monetaria == 'S' %}
+                                <span class="badge bg-info">Si</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge {{ 'bg-primary' if cuenta.tipo_saldo == 'D' else 'bg-warning' }}">
+                                {{ 'Deudor' if cuenta.tipo_saldo == 'D' else 'Acreedor' }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            {% if cuenta.ultimo_saldo %}
+                                {{ "{:,.2f}".format(cuenta.ultimo_saldo|float) }}
+                            {% else %}
+                                0.00
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if cuenta.activa %}
+                                <span class="badge bg-success">Activa</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactiva</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('cuentas.view', id=cuenta.id) }}" class="btn btn-outline-info" title="Ver">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('cuentas.edit', id=cuenta.id) }}" class="btn btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" title="Eliminar"
+                                        onclick="confirmarEliminar({{ cuenta.id }}, '{{ cuenta.cuenta }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted">No se encontraron cuentas</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminacion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Esta seguro que desea eliminar la cuenta <strong id="cuenta-codigo"></strong>?</p>
+                <p class="text-danger small">Esta accion no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmarEliminar(id, codigo) {
+        document.getElementById('cuenta-codigo').textContent = codigo;
+        document.getElementById('deleteForm').action = '/cuentas/' + id + '/delete';
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+
+    $(document).ready(function() {
+        {% if cuentas|length > 20 %}
+        $('#cuentas-table').DataTable({
+            ordering: false,
+            pageLength: 50
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

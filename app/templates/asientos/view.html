@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Asiento {{ asiento.numero }} - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-journal-text"></i> Asiento N° {{ asiento.numero }}
+        {% if asiento.es_apertura %}
+            <span class="badge bg-info">Apertura</span>
+        {% endif %}
+        {% if asiento.estado.value == 'ANULADO' %}
+            <span class="badge bg-danger">ANULADO</span>
+        {% endif %}
+    </h2>
+    <div>
+        {% if asiento.estado.value == 'ACTIVO' %}
+        <a href="{{ url_for('asientos.edit', id=asiento.id) }}" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        {% endif %}
+        <a href="{{ url_for('asientos.index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Informacion del Asiento</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Numero:</strong><br>
+                        {{ asiento.numero }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Fecha:</strong><br>
+                        {{ asiento.fecha.strftime('%d/%m/%Y') }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Estado:</strong><br>
+                        {% if asiento.estado.value == 'ACTIVO' %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Anulado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if asiento.leyenda_global %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <strong>Leyenda Global:</strong><br>
+                        {{ asiento.leyenda_global }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Totales</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <th>Total Debe:</th>
+                        <td class="text-end">{{ "{:,.2f}".format(asiento.total_debe) }}</td>
+                    </tr>
+                    <tr>
+                        <th>Total Haber:</th>
+                        <td class="text-end">{{ "{:,.2f}".format(asiento.total_haber) }}</td>
+                    </tr>
+                    <tr class="{{ 'table-success' if asiento.esta_balanceado else 'table-danger' }}">
+                        <th>Diferencia:</th>
+                        <td class="text-end">
+                            {{ "{:,.2f}".format(asiento.total_debe - asiento.total_haber) }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Entry Lines -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Detalle del Asiento</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 50px;">Item</th>
+                        <th style="width: 100px;">Cuenta</th>
+                        <th>Nombre</th>
+                        <th class="text-end" style="width: 130px;">Debe</th>
+                        <th class="text-end" style="width: 130px;">Haber</th>
+                        <th>Leyenda</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for linea in asiento.lineas %}
+                    <tr>
+                        <td class="text-center">{{ linea.item }}</td>
+                        <td>
+                            <a href="{{ url_for('cuentas.view', id=linea.cuenta_id) }}">
+                                {{ linea.cuenta.cuenta }}
+                            </a>
+                        </td>
+                        <td>{{ linea.cuenta.nombre }}</td>
+                        <td class="text-end">
+                            {% if linea.debe and linea.debe > 0 %}
+                                {{ "{:,.2f}".format(linea.debe|float) }}
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if linea.haber and linea.haber > 0 %}
+                                {{ "{:,.2f}".format(linea.haber|float) }}
+                            {% endif %}
+                        </td>
+                        <td>{{ linea.leyenda or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="3" class="text-end">TOTALES:</th>
+                        <th class="text-end">{{ "{:,.2f}".format(asiento.total_debe) }}</th>
+                        <th class="text-end">{{ "{:,.2f}".format(asiento.total_haber) }}</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Audit Info -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h6 class="mb-0">Informacion de Auditoria</h6>
+    </div>
+    <div class="card-body">
+        <small class="text-muted">
+            <strong>Creado:</strong> {{ asiento.created_at.strftime('%d/%m/%Y %H:%M') if asiento.created_at else '-' }}
+            {% if asiento.usuario_creador %}
+                por {{ asiento.usuario_creador.nombre or asiento.usuario_creador.username }}
+            {% endif %}
+            {% if asiento.estado.value == 'ANULADO' %}
+            <br>
+            <strong>Anulado:</strong> {{ asiento.anulado_at.strftime('%d/%m/%Y %H:%M') if asiento.anulado_at else '-' }}
+            {% if asiento.usuario_anulador %}
+                por {{ asiento.usuario_anulador.nombre or asiento.usuario_anulador.username }}
+            {% endif %}
+            {% endif %}
+        </small>
+    </div>
+</div>
+{% endblock %}
