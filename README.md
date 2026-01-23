@@ -1,11 +1,10 @@
-# Vero Contable
+# Contabilidad
 
-Sistema Contable migrado de Clipper a Python/Flask con MySQL.
+Sistema Contable migrado de Clipper a Python/Flask.
 
 ## Requisitos
 
 - Python 3.10+
-- MySQL 8.0+
 - pip
 
 ## Instalacion
@@ -29,39 +28,27 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Configurar base de datos
+### 3. Inicializar base de datos
 
-Crear la base de datos en MySQL:
-
-```sql
-CREATE DATABASE vero_contable CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-### 4. Configurar variables de entorno
-
-Editar el archivo `.env` con los datos de conexion:
-
-```
-DATABASE_URL=mysql+pymysql://usuario:password@localhost/vero_contable
-SECRET_KEY=tu-clave-secreta-aqui
-```
-
-### 5. Inicializar base de datos
+Por defecto usa **SQLite** (no requiere instalacion adicional).
 
 ```bash
 # Crear tablas
-flask db upgrade
-
-# O usando el comando personalizado
 flask init-db
 
 # Crear usuario administrador
 flask create-admin
 ```
 
-### 6. Migrar datos desde DBF (opcional)
+### 4. Migrar datos desde DBF (opcional)
+
+Si tienes datos de un sistema Clipper anterior:
 
 ```bash
+# Migrar todas las empresas automaticamente
+python scripts/migrar_todo.py
+
+# O migrar una empresa especifica
 python scripts/migrar_dbf.py --empresa DIRE1 --path "C:\ruta\a\archivos\DBF"
 ```
 
@@ -86,6 +73,26 @@ gunicorn -w 4 -b 0.0.0.0:5000 "app:create_app()"
 - **Usuario:** admin
 - **Password:** admin123
 
+## Base de Datos
+
+### SQLite (por defecto)
+
+No requiere configuracion. La base de datos se crea automaticamente en `vero_contable.db`.
+
+### MySQL (opcional)
+
+Si prefieres usar MySQL, edita el archivo `.env`:
+
+```
+DATABASE_URL=mysql+pymysql://usuario:password@localhost/contabilidad
+```
+
+Y crea la base de datos:
+
+```sql
+CREATE DATABASE contabilidad CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
 ## Estructura del proyecto
 
 ```
@@ -105,9 +112,9 @@ vero_contable/
 │   ├── services/            # Logica de negocio
 │   ├── templates/           # Plantillas HTML
 │   └── static/              # CSS, JS, imagenes
-├── migrations/              # Migraciones de BD
 ├── scripts/                 # Scripts de utilidad
-│   └── migrar_dbf.py        # Migracion desde DBF
+│   ├── migrar_todo.py       # Migracion completa desde DBF
+│   └── migrar_dbf.py        # Migracion por empresa
 ├── tests/                   # Tests
 ├── .env                     # Variables de entorno
 ├── requirements.txt         # Dependencias
@@ -151,17 +158,12 @@ flask init-db
 
 # Crear usuario admin
 flask create-admin
-
-# Migraciones
-flask db migrate -m "descripcion"
-flask db upgrade
-flask db downgrade
 ```
 
 ## Tecnologias
 
 - **Backend:** Python 3.10+, Flask 3.0
-- **Base de datos:** MySQL 8.0, SQLAlchemy
-- **Frontend:** Bootstrap 5, DataTables, Chart.js
+- **Base de datos:** SQLite (default) / MySQL (opcional)
+- **ORM:** SQLAlchemy
+- **Frontend:** Bootstrap 5, DataTables
 - **Autenticacion:** Flask-Login
-- **Migraciones:** Flask-Migrate (Alembic)
