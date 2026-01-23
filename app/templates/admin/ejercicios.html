@@ -45,6 +45,12 @@
                                 <i class="bi bi-pencil"></i>
                             </a>
                             {% if not ejercicio.cerrado %}
+                            <form method="POST" action="{{ url_for('admin.ejercicio_generar_apertura', id=ejercicio.id) }}"
+                                  class="d-inline" onsubmit="return confirm('¿Generar asiento de apertura para {{ ejercicio.anio }}?');">
+                                <button type="submit" class="btn btn-sm btn-outline-success" title="Generar Asiento de Apertura">
+                                    <i class="bi bi-journal-plus"></i>
+                                </button>
+                            </form>
                             <form method="POST" action="{{ url_for('admin.ejercicio_cerrar', id=ejercicio.id) }}"
                                   class="d-inline" onsubmit="return confirm('¿Está seguro de cerrar el ejercicio {{ ejercicio.anio }}? Esta acción no se puede deshacer.');">
                                 <button type="submit" class="btn btn-sm btn-outline-warning" title="Cerrar Ejercicio">
@@ -81,6 +87,15 @@
         <ul class="text-muted">
             <li><span class="badge bg-success">Abierto</span> - Permite registrar asientos y modificaciones</li>
             <li><span class="badge bg-secondary">Cerrado</span> - No permite modificaciones (solo consulta)</li>
+        </ul>
+
+        <hr>
+
+        <p class="mb-2"><strong>Acciones:</strong></p>
+        <ul class="text-muted">
+            <li><i class="bi bi-pencil text-primary"></i> <strong>Editar</strong> - Modificar fechas del ejercicio</li>
+            <li><i class="bi bi-journal-plus text-success"></i> <strong>Generar Apertura</strong> - Crea automáticamente el asiento de apertura con los saldos del ejercicio anterior. El asiento queda editable.</li>
+            <li><i class="bi bi-lock text-warning"></i> <strong>Cerrar</strong> - Cierra el ejercicio (no se pueden hacer más modificaciones)</li>
         </ul>
     </div>
 </div>

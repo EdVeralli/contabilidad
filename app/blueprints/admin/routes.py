@@ -4,7 +4,8 @@ from flask_login import login_required, current_user
 from functools import wraps
 from datetime import date
 from app.extensions import db
-from app.models import Empresa, Usuario, Ejercicio
+from app.models import Empresa, Usuario, Ejercicio, Plan, Asiento, AsientoLinea, EstadoAsiento
+from decimal import Decimal
 from . import admin_bp
 
 
@@ -266,3 +267,122 @@ def ejercicio_cerrar(id):
 
     flash(f'Ejercicio {ejercicio.anio} cerrado.', 'success')
     return redirect(url_for('admin.ejercicios'))
+
+
+@admin_bp.route('/ejercicios/<int:id>/generar-apertura', methods=['POST'])
+@login_required
+def ejercicio_generar_apertura(id):
+    """Generate opening entry for fiscal year based on previous year's closing balances."""
+    ejercicio = Ejercicio.query.get_or_404(id)
+    empresa_id = session.get('empresa_id')
+
+    # Verify it belongs to current empresa
+    if ejercicio.empresa_id != empresa_id:
+        flash('No tiene permisos para este ejercicio.', 'danger')
+        return redirect(url_for('admin.ejercicios'))
+
+    # Check if opening entry already exists for this year
+    asiento_existente = Asiento.query.filter_by(
+        empresa_id=empresa_id,
+        es_apertura=True,
+        estado=EstadoAsiento.ACTIVO
+    ).filter(
+        db.extract('year', Asiento.fecha) == ejercicio.anio
+    ).first()
+
+    if asiento_existente:
+        flash(f'Ya existe un asiento de apertura para {ejercicio.anio}. Puede editarlo.', 'warning')
+        return redirect(url_for('asientos.edit', id=asiento_existente.id))
+
+    # Get previous year's ejercicio
+    ejercicio_anterior = Ejercicio.query.filter_by(
+        empresa_id=empresa_id,
+        anio=ejercicio.anio - 1
+    ).first()
+
+    # Calculate closing balances from previous year
+    # We need to sum all movements up to the end of the previous year
+    saldos = {}
+
+    # Get all active asientos up to the end of the previous year
+    fecha_corte = ejercicio.fecha_inicio
+    asientos_previos = Asiento.query.filter(
+        Asiento.empresa_id == empresa_id,
+        Asiento.fecha < fecha_corte,
+        Asiento.estado == EstadoAsiento.ACTIVO
+    ).all()
+
+    for asiento in asientos_previos:
+        for linea in asiento.lineas:
+            cuenta_id = linea.cuenta_id
+            if cuenta_id not in saldos:
+                saldos[cuenta_id] = Decimal('0')
+            saldos[cuenta_id] += linea.debe - linea.haber
+
+    # Filter out zero balances and get account details
+    saldos_no_cero = {}
+    for cuenta_id, saldo in saldos.items():
+        if abs(saldo) >= Decimal('0.01'):
+            cuenta = Plan.query.get(cuenta_id)
+            if cuenta and cuenta.imputable == 'S':
+                saldos_no_cero[cuenta_id] = {
+                    'cuenta': cuenta,
+                    'saldo': saldo
+                }
+
+    if not saldos_no_cero:
+        flash('No hay saldos del ejercicio anterior para generar la apertura.', 'warning')
+        return redirect(url_for('admin.ejercicios'))
+
+    # Get next asiento number
+    ultimo_numero = db.session.query(db.func.max(Asiento.numero)).filter_by(
+        empresa_id=empresa_id
+    ).scalar() or 0
+
+    # Create opening entry
+    asiento_apertura = Asiento(
+        empresa_id=empresa_id,
+        numero=ultimo_numero + 1,
+        fecha=ejercicio.fecha_inicio,
+        es_apertura=True,
+        leyenda_global=f'Asiento de Apertura - Ejercicio {ejercicio.anio}',
+        estado=EstadoAsiento.ACTIVO,
+        usuario_id=current_user.id
+    )
+    db.session.add(asiento_apertura)
+    db.session.flush()
+
+    # Create lines for each account with balance
+    item = 1
+    total_debe = Decimal('0')
+    total_haber = Decimal('0')
+
+    for cuenta_id, datos in sorted(saldos_no_cero.items(), key=lambda x: x[1]['cuenta'].cuenta):
+        saldo = datos['saldo']
+        cuenta = datos['cuenta']
+
+        # Debit balances go to Debe, Credit balances go to Haber
+        if saldo > 0:
+            debe = saldo
+            haber = Decimal('0')
+            total_debe += debe
+        else:
+            debe = Decimal('0')
+            haber = abs(saldo)
+            total_haber += haber
+
+        linea = AsientoLinea(
+            asiento_id=asiento_apertura.id,
+            item=item,
+            cuenta_id=cuenta_id,
+            debe=debe,
+            haber=haber,
+            leyenda=f'Saldo inicial {ejercicio.anio}'
+        )
+        db.session.add(linea)
+        item += 1
+
+    db.session.commit()
+
+    flash(f'Asiento de apertura generado con {item - 1} líneas. Puede modificarlo si es necesario.', 'success')
+    return redirect(url_for('asientos.edit', id=asiento_apertura.id))
