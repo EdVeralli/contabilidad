@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Ejercicios Contables - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-calendar-range"></i> Ejercicios Contables</h2>
+    <a href="{{ url_for('admin.ejercicio_create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nuevo Ejercicio
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <strong>Empresa:</strong> {{ empresa.nombre }}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 100px;">Año</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th style="width: 120px;">Estado</th>
+                        <th style="width: 150px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ejercicio in ejercicios %}
+                    <tr>
+                        <td><strong>{{ ejercicio.anio }}</strong></td>
+                        <td>{{ ejercicio.fecha_inicio.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ ejercicio.fecha_fin.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            {% if ejercicio.cerrado %}
+                                <span class="badge bg-secondary"><i class="bi bi-lock"></i> Cerrado</span>
+                            {% else %}
+                                <span class="badge bg-success"><i class="bi bi-unlock"></i> Abierto</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('admin.ejercicio_edit', id=ejercicio.id) }}"
+                               class="btn btn-sm btn-outline-primary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% if not ejercicio.cerrado %}
+                            <form method="POST" action="{{ url_for('admin.ejercicio_cerrar', id=ejercicio.id) }}"
+                                  class="d-inline" onsubmit="return confirm('¿Está seguro de cerrar el ejercicio {{ ejercicio.anio }}? Esta acción no se puede deshacer.');">
+                                <button type="submit" class="btn btn-sm btn-outline-warning" title="Cerrar Ejercicio">
+                                    <i class="bi bi-lock"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            No hay ejercicios definidos. Cree uno nuevo para comenzar.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <i class="bi bi-info-circle"></i> Información
+    </div>
+    <div class="card-body">
+        <p class="mb-2"><strong>¿Qué es un Ejercicio Contable?</strong></p>
+        <p class="text-muted mb-3">
+            Un ejercicio contable es el período de tiempo (generalmente un año) durante el cual se registran
+            las operaciones de la empresa. Al finalizar el ejercicio, se realiza el cierre contable.
+        </p>
+        <p class="mb-2"><strong>Estados:</strong></p>
+        <ul class="text-muted">
+            <li><span class="badge bg-success">Abierto</span> - Permite registrar asientos y modificaciones</li>
+            <li><span class="badge bg-secondary">Cerrado</span> - No permite modificaciones (solo consulta)</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

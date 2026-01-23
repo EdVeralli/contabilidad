@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-calendar-range"></i> {{ title }}</h2>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <strong>Empresa:</strong> {{ empresa.nombre }}
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label for="anio" class="form-label">Año <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="anio" name="anio"
+                               value="{{ ejercicio.anio if ejercicio else anio_sugerido }}"
+                               min="1990" max="2100" required>
+                        <div class="form-text">Año del ejercicio contable</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="fecha_inicio" class="form-label">Fecha de Inicio <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio"
+                               value="{{ ejercicio.fecha_inicio.strftime('%Y-%m-%d') if ejercicio else '' }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="fecha_fin" class="form-label">Fecha de Fin <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="fecha_fin" name="fecha_fin"
+                               value="{{ ejercicio.fecha_fin.strftime('%Y-%m-%d') if ejercicio else '' }}" required>
+                    </div>
+
+                    {% if ejercicio %}
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="cerrado" name="cerrado"
+                                   {{ 'checked' if ejercicio.cerrado }}>
+                            <label class="form-check-label" for="cerrado">
+                                Ejercicio Cerrado
+                            </label>
+                        </div>
+                        <div class="form-text text-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Un ejercicio cerrado no permite registrar ni modificar asientos.
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.ejercicios') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-lightbulb"></i> Ayuda
+            </div>
+            <div class="card-body">
+                <p><strong>Año:</strong> Generalmente coincide con el año calendario.</p>
+
+                <p><strong>Fecha de Inicio:</strong> Primer día del ejercicio. Usualmente 01/01 del año.</p>
+
+                <p><strong>Fecha de Fin:</strong> Último día del ejercicio. Usualmente 31/12 del año.</p>
+
+                <hr>
+
+                <p class="text-muted">
+                    <i class="bi bi-info-circle"></i>
+                    Algunas empresas utilizan ejercicios que no coinciden con el año calendario
+                    (ej: 01/04 al 31/03 del año siguiente).
+                </p>
+            </div>
+        </div>
+
+        {% if not ejercicio %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-magic"></i> Autocompletar
+            </div>
+            <div class="card-body">
+                <p class="mb-2">Seleccione un tipo de ejercicio:</p>
+                <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="setEjercicioCalendario()">
+                    Año Calendario
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setEjercicioFiscal()">
+                    Año Fiscal (Abr-Mar)
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setEjercicioCalendario() {
+    const anio = document.getElementById('anio').value || new Date().getFullYear();
+    document.getElementById('fecha_inicio').value = anio + '-01-01';
+    document.getElementById('fecha_fin').value = anio + '-12-31';
+}
+
+function setEjercicioFiscal() {
+    const anio = document.getElementById('anio').value || new Date().getFullYear();
+    document.getElementById('fecha_inicio').value = anio + '-04-01';
+    document.getElementById('fecha_fin').value = (parseInt(anio) + 1) + '-03-31';
+}
+
+// Auto-set dates when year changes
+document.getElementById('anio').addEventListener('change', function() {
+    const fechaInicio = document.getElementById('fecha_inicio');
+    const fechaFin = document.getElementById('fecha_fin');
+
+    // Only auto-fill if both are empty
+    if (!fechaInicio.value && !fechaFin.value) {
+        setEjercicioCalendario();
+    }
+});
+</script>
+{% endblock %}
