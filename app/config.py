@@ -16,7 +16,7 @@ class Config:
     PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
 
     # Application
-    APP_NAME = os.environ.get('APP_NAME', 'Contabilidad')
+    APP_NAME = 'Contabilidad'  # Hardcoded
     ITEMS_PER_PAGE = int(os.environ.get('ITEMS_PER_PAGE', 20))
 
     # Paths

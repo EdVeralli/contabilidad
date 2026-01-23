@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 from .config import config
 from .extensions import db, login_manager, migrate, csrf
 
+# Get the base directory (vero_contable folder)
+BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+
 
 def create_app(config_name=None):
     """Create and configure the Flask application.
@@ -16,8 +19,9 @@ def create_app(config_name=None):
     Returns:
         Flask application instance
     """
-    # Load environment variables
-    load_dotenv()
+    # Load environment variables from .env file in the project root
+    env_path = os.path.join(BASE_DIR, '.env')
+    load_dotenv(env_path)
 
     if config_name is None:
         config_name = os.environ.get('FLASK_ENV', 'development')
