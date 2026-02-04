@@ -13,207 +13,489 @@
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 
     <style>
+        /* ========== WINDOWS XP LUNA THEME ========== */
+
         :root {
-            --sidebar-width: 250px;
+            --xp-blue-dark: #0054E3;
+            --xp-blue-medium: #245EDC;
+            --xp-blue-light: #3C8CF4;
+            --xp-blue-title: #0831D9;
+            --xp-green-start: #3C9A3C;
+            --xp-silver: #D4D0C8;
+            --xp-silver-dark: #808080;
+            --xp-silver-light: #FFFFFF;
+            --xp-window-bg: #ECE9D8;
+            --xp-taskbar: #245EDC;
+            --sidebar-width: 200px;
+        }
+
+        * {
+            font-family: "Tahoma", "Segoe UI", Arial, sans-serif;
         }
 
         body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #0058E6 0%, #3C8CF4 3%, #5BA3F4 5%, #6EACF4 50%, #5BA3F4 95%, #3C8CF4 97%, #0058E6 100%);
+            background-attachment: fixed;
             min-height: 100vh;
+            font-size: 11px;
         }
 
-        .sidebar {
-            width: var(--sidebar-width);
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
-            z-index: 1000;
+        /* Main Window Container */
+        .xp-window {
+            margin: 10px;
+            background: var(--xp-window-bg);
+            border: 1px solid #0054E3;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            min-height: calc(100vh - 20px);
         }
 
-        .sidebar-brand {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .sidebar-nav {
-            padding: 1rem 0;
-        }
-
-        .sidebar-nav .nav-link {
-            color: rgba(255,255,255,0.7);
-            padding: 0.75rem 1rem;
+        /* Window Title Bar */
+        .xp-titlebar {
+            background: linear-gradient(to bottom,
+                #0058E6 0%,
+                #3C8CF4 8%,
+                #4C98F4 20%,
+                #3C8CF4 30%,
+                #2878E4 80%,
+                #0054E3 100%);
+            border-radius: 6px 6px 0 0;
+            padding: 4px 8px;
             display: flex;
             align-items: center;
-            transition: all 0.2s;
+            justify-content: space-between;
+            height: 30px;
         }
 
-        .sidebar-nav .nav-link:hover,
-        .sidebar-nav .nav-link.active {
-            color: #fff;
-            background-color: rgba(255,255,255,0.1);
+        .xp-titlebar-text {
+            color: white;
+            font-weight: bold;
+            font-size: 13px;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .sidebar-nav .nav-link i {
-            margin-right: 0.75rem;
-            font-size: 1.1rem;
+        .xp-titlebar-text img, .xp-titlebar-text i {
+            width: 16px;
+            height: 16px;
         }
 
-        .sidebar-nav .nav-section {
-            padding: 0.5rem 1rem;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.4);
-            letter-spacing: 0.05em;
+        .xp-window-buttons {
+            display: flex;
+            gap: 2px;
         }
 
-        .main-content {
-            margin-left: var(--sidebar-width);
-            min-height: 100vh;
-            background-color: #f8f9fa;
+        .xp-btn-window {
+            width: 21px;
+            height: 21px;
+            border: 1px solid rgba(0,0,0,0.3);
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .top-navbar {
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .xp-btn-minimize {
+            background: linear-gradient(to bottom, #3C8CF4 0%, #2060D0 100%);
+            color: white;
         }
 
-        .content-wrapper {
-            padding: 1.5rem;
+        .xp-btn-maximize {
+            background: linear-gradient(to bottom, #3C8CF4 0%, #2060D0 100%);
+            color: white;
         }
 
+        .xp-btn-close {
+            background: linear-gradient(to bottom, #E48264 0%, #C44030 100%);
+            color: white;
+        }
+
+        /* Menu Bar */
+        .xp-menubar {
+            background: var(--xp-window-bg);
+            border-bottom: 1px solid #ACA899;
+            padding: 2px 4px;
+            display: flex;
+            gap: 2px;
+        }
+
+        .xp-menu-item {
+            padding: 2px 8px;
+            color: #000;
+            text-decoration: none;
+            font-size: 11px;
+        }
+
+        .xp-menu-item:hover {
+            background: var(--xp-blue-dark);
+            color: white;
+        }
+
+        /* Toolbar */
+        .xp-toolbar {
+            background: linear-gradient(to bottom, #FAFAFA 0%, #E8E4DB 50%, #D8D4CB 100%);
+            border-bottom: 1px solid #ACA899;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .xp-toolbar-btn {
+            background: linear-gradient(to bottom, #FFFFFF 0%, #E8E4D8 100%);
+            border: 1px solid #ACA899;
+            border-radius: 3px;
+            padding: 4px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .xp-toolbar-btn:hover {
+            background: linear-gradient(to bottom, #FFF8E8 0%, #F8E8C8 100%);
+            border-color: #FFC840;
+        }
+
+        .xp-toolbar-btn:active {
+            background: linear-gradient(to bottom, #E8E4D8 0%, #D8D4CB 100%);
+        }
+
+        .xp-toolbar-separator {
+            width: 1px;
+            height: 22px;
+            background: linear-gradient(to bottom, #FFFFFF 0%, #ACA899 50%, #FFFFFF 100%);
+            margin: 0 4px;
+        }
+
+        /* Main Layout */
+        .xp-main {
+            display: flex;
+            min-height: calc(100vh - 100px);
+        }
+
+        /* Sidebar - Task Pane Style */
+        .xp-sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(to bottom, #6B98D4 0%, #4878C4 100%);
+            border-right: 1px solid #3C68B4;
+            padding: 0;
+        }
+
+        .xp-task-group {
+            margin: 8px;
+            background: #FFFFFF;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .xp-task-header {
+            background: linear-gradient(to bottom, #FFFFFF 0%, #D4E8FC 100%);
+            padding: 6px 10px;
+            font-weight: bold;
+            font-size: 11px;
+            color: #215DC6;
+            border-bottom: 1px solid #C4D8F4;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .xp-task-header i {
+            color: #215DC6;
+        }
+
+        .xp-task-content {
+            padding: 4px 0;
+        }
+
+        .xp-task-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            color: #215DC6;
+            text-decoration: none;
+            font-size: 11px;
+        }
+
+        .xp-task-link:hover {
+            color: #1048A0;
+            text-decoration: underline;
+        }
+
+        .xp-task-link.active {
+            background: #D4E8FC;
+            font-weight: bold;
+        }
+
+        .xp-task-link i {
+            font-size: 14px;
+            color: #3078D4;
+        }
+
+        /* Content Area */
+        .xp-content {
+            flex: 1;
+            padding: 8px;
+            background: #FFFFFF;
+            overflow: auto;
+        }
+
+        /* Status Bar */
+        .xp-statusbar {
+            background: linear-gradient(to bottom, #E8E4DB 0%, #D8D4CB 100%);
+            border-top: 1px solid #FFFFFF;
+            padding: 2px 8px;
+            font-size: 11px;
+            color: #444;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .xp-statusbar-section {
+            border: 1px inset #D8D4CB;
+            padding: 1px 8px;
+            background: #F4F4F0;
+        }
+
+        /* XP Style Cards/Panels */
+        .xp-panel {
+            background: #FFFFFF;
+            border: 1px solid #ACA899;
+            margin-bottom: 10px;
+        }
+
+        .xp-panel-header {
+            background: linear-gradient(to bottom, #FEFEFE 0%, #E8E4D8 100%);
+            border-bottom: 1px solid #ACA899;
+            padding: 4px 8px;
+            font-weight: bold;
+            font-size: 11px;
+            color: #333;
+        }
+
+        .xp-panel-body {
+            padding: 10px;
+        }
+
+        /* XP Style Tables */
+        .xp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .xp-table th {
+            background: linear-gradient(to bottom, #FFFFFF 0%, #E8E4D8 100%);
+            border: 1px solid #ACA899;
+            padding: 4px 8px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .xp-table td {
+            border: 1px solid #D4D0C8;
+            padding: 3px 8px;
+        }
+
+        .xp-table tr:nth-child(even) {
+            background: #F8F8F4;
+        }
+
+        .xp-table tr:hover {
+            background: #E8F0FC;
+        }
+
+        /* XP Style Buttons */
+        .xp-button {
+            background: linear-gradient(to bottom, #FFFFFF 0%, #E8E4D8 100%);
+            border: 1px solid #ACA899;
+            border-radius: 3px;
+            padding: 4px 16px;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: "Tahoma", Arial, sans-serif;
+        }
+
+        .xp-button:hover {
+            background: linear-gradient(to bottom, #FFF8E8 0%, #F8E8C8 100%);
+            border-color: #FFC840;
+        }
+
+        .xp-button:active {
+            background: linear-gradient(to bottom, #E0DCD4 0%, #C8C4BC 100%);
+        }
+
+        .xp-button-primary {
+            background: linear-gradient(to bottom, #4890E8 0%, #2060C8 100%);
+            border-color: #1050A8;
+            color: white;
+        }
+
+        .xp-button-primary:hover {
+            background: linear-gradient(to bottom, #58A0F8 0%, #3070D8 100%);
+        }
+
+        /* XP Style Inputs */
+        .xp-input {
+            border: 1px solid #7F9DB9;
+            padding: 3px 4px;
+            font-size: 11px;
+            font-family: "Tahoma", Arial, sans-serif;
+        }
+
+        .xp-input:focus {
+            outline: none;
+            border-color: #3C8CF4;
+        }
+
+        /* XP Style Alerts */
+        .xp-alert {
+            border: 1px solid #ACA899;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .xp-alert-info {
+            background: #E8F4FC;
+            border-color: #A8C8E8;
+        }
+
+        .xp-alert-success {
+            background: #E8FCE8;
+            border-color: #A8E8A8;
+        }
+
+        .xp-alert-warning {
+            background: #FCFCE8;
+            border-color: #E8E8A8;
+        }
+
+        .xp-alert-danger {
+            background: #FCE8E8;
+            border-color: #E8A8A8;
+        }
+
+        /* Form groups */
+        .xp-form-group {
+            margin-bottom: 10px;
+        }
+
+        .xp-form-label {
+            display: block;
+            margin-bottom: 3px;
+            font-size: 11px;
+            font-weight: normal;
+        }
+
+        /* Override Bootstrap for XP look */
         .card {
-            border: none;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            border-radius: 0 !important;
+            border: 1px solid #ACA899 !important;
+            box-shadow: none !important;
         }
 
         .card-header {
-            background-color: #fff;
-            border-bottom: 1px solid #eee;
+            background: linear-gradient(to bottom, #FEFEFE 0%, #E8E4D8 100%) !important;
+            border-bottom: 1px solid #ACA899 !important;
+            border-radius: 0 !important;
+            padding: 6px 10px !important;
+            font-size: 12px !important;
         }
 
-        .table th {
-            font-weight: 600;
-            background-color: #f8f9fa;
+        .card-body {
+            padding: 10px !important;
+            font-size: 11px !important;
+        }
+
+        .btn {
+            border-radius: 3px !important;
+            font-size: 11px !important;
+            padding: 4px 12px !important;
         }
 
         .btn-primary {
-            background-color: #2c3e50;
-            border-color: #2c3e50;
+            background: linear-gradient(to bottom, #4890E8 0%, #2060C8 100%) !important;
+            border-color: #1050A8 !important;
         }
 
-        .btn-primary:hover {
-            background-color: #1a252f;
-            border-color: #1a252f;
+        .btn-secondary {
+            background: linear-gradient(to bottom, #FFFFFF 0%, #E8E4D8 100%) !important;
+            border-color: #ACA899 !important;
+            color: #333 !important;
+        }
+
+        .btn-outline-primary {
+            background: linear-gradient(to bottom, #FFFFFF 0%, #E8E4D8 100%) !important;
+            border-color: #ACA899 !important;
+            color: #215DC6 !important;
+        }
+
+        .btn-outline-primary:hover {
+            background: linear-gradient(to bottom, #E8F4FC 0%, #D4E8FC 100%) !important;
+        }
+
+        .form-control {
+            border-radius: 0 !important;
+            border: 1px solid #7F9DB9 !important;
+            font-size: 11px !important;
+            padding: 4px 6px !important;
         }
 
         .form-control:focus {
-            border-color: #2c3e50;
-            box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+            box-shadow: none !important;
+            border-color: #3C8CF4 !important;
         }
 
-        /* For currency inputs */
-        .currency-input {
-            text-align: right;
+        .table {
+            font-size: 11px !important;
         }
 
-        /* Login page specific */
-        .login-page {
-            margin-left: 0 !important;
+        .table th {
+            background: linear-gradient(to bottom, #FFFFFF 0%, #E8E4D8 100%) !important;
+            font-size: 11px !important;
+            padding: 4px 8px !important;
         }
 
-        /* ========== PRINT STYLES ========== */
+        .table td {
+            padding: 3px 8px !important;
+        }
+
+        .badge {
+            border-radius: 2px !important;
+            font-size: 10px !important;
+        }
+
+        /* Print styles */
         @media print {
-            /* Hide sidebar and navigation elements */
-            .sidebar {
+            .xp-sidebar, .xp-titlebar, .xp-menubar, .xp-toolbar, .xp-statusbar, .no-print {
                 display: none !important;
             }
-
-            .top-navbar {
-                display: none !important;
+            .xp-window {
+                margin: 0;
+                border: none;
+                box-shadow: none;
             }
-
-            /* Make main content full width */
-            .main-content {
-                margin-left: 0 !important;
-                width: 100% !important;
+            .xp-content {
+                padding: 0;
             }
-
-            .content-wrapper {
-                padding: 0.5cm !important;
-            }
-
-            /* Hide buttons and interactive elements */
-            .btn,
-            .no-print,
-            .alert-dismissible .btn-close,
-            .dataTables_filter,
-            .dataTables_length,
-            .dataTables_paginate,
-            .dataTables_info {
-                display: none !important;
-            }
-
-            /* Show all data in tables (no pagination) */
-            .dataTables_wrapper .dataTables_scroll {
-                overflow: visible !important;
-            }
-
-            /* Ensure tables fit on page */
-            table {
-                width: 100% !important;
-                font-size: 9pt !important;
-            }
-
-            table th, table td {
-                padding: 3px 6px !important;
-            }
-
-            /* Cards styling for print - IMPORTANT: allow break inside */
-            .card {
-                border: none !important;
-                box-shadow: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-
-            .card-body {
-                padding: 0 !important;
-            }
-
-            .card-header {
-                background-color: transparent !important;
-                border-bottom: 2px solid #000 !important;
-                padding: 0.5cm 0 !important;
-                margin-bottom: 0.5cm !important;
-            }
-
-            /* Page margins */
-            @page {
-                margin: 1cm;
-                size: A4 landscape;
-            }
-
-            /* Only avoid breaks inside table rows */
-            tr {
-                break-inside: avoid;
-            }
-
-            /* Ensure text colors print properly */
             body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            /* Make links visible as text */
-            a[href]:after {
-                content: none !important;
-            }
-
-            /* Ensure content flows properly */
-            .card, .card-body, .table-responsive {
-                overflow: visible !important;
-                display: block !important;
+                background: white;
             }
         }
     </style>
@@ -221,131 +503,188 @@
 </head>
 <body>
     {% if current_user.is_authenticated %}
-    <!-- Sidebar -->
-    <nav class="sidebar">
-        <div class="sidebar-brand">
-            <a href="{{ url_for('auth.dashboard') }}" class="text-white text-decoration-none">
-                <h5 class="mb-0"><i class="bi bi-journal-bookmark"></i> {{ app_name }}</h5>
-            </a>
+    <div class="xp-window">
+        <!-- Title Bar -->
+        <div class="xp-titlebar">
+            <div class="xp-titlebar-text">
+                <i class="bi bi-journal-bookmark"></i>
+                {{ app_name }} - {% if empresa_actual %}{{ empresa_actual.nombre }}{% else %}Sin Empresa{% endif %}
+            </div>
+            <div class="xp-window-buttons">
+                <button class="xp-btn-window xp-btn-minimize">_</button>
+                <button class="xp-btn-window xp-btn-maximize">&#9633;</button>
+                <a href="{{ url_for('auth.logout') }}" class="xp-btn-window xp-btn-close" title="Cerrar Sesion">X</a>
+            </div>
         </div>
-        <div class="sidebar-nav">
-            <a href="{{ url_for('auth.dashboard') }}" class="nav-link {% if request.endpoint == 'auth.dashboard' %}active{% endif %}">
-                <i class="bi bi-speedometer2"></i> Dashboard
-            </a>
-            <a href="{{ url_for('auth.select_empresa') }}" class="nav-link {% if request.endpoint == 'auth.select_empresa' %}active{% endif %}">
-                <i class="bi bi-building"></i> Cambiar Empresa
-            </a>
 
-            <div class="nav-section">Contabilidad</div>
-            <a href="{{ url_for('cuentas.index') }}" class="nav-link {% if request.blueprint == 'cuentas' %}active{% endif %}">
-                <i class="bi bi-list-nested"></i> Plan de Cuentas
-            </a>
-            <a href="{{ url_for('asientos.index') }}" class="nav-link {% if request.blueprint == 'asientos' %}active{% endif %}">
-                <i class="bi bi-journal-text"></i> Asientos
-            </a>
-
-            <div class="nav-section">Informes</div>
-            <a href="{{ url_for('informes.libro_diario') }}" class="nav-link">
-                <i class="bi bi-file-text"></i> Libro Diario
-            </a>
-            <a href="{{ url_for('informes.libro_mayor') }}" class="nav-link">
-                <i class="bi bi-file-earmark-text"></i> Libro Mayor
-            </a>
-            <a href="{{ url_for('informes.sumas_saldos') }}" class="nav-link">
-                <i class="bi bi-calculator"></i> Sumas y Saldos
-            </a>
-            <a href="{{ url_for('informes.balance_general') }}" class="nav-link">
-                <i class="bi bi-pie-chart"></i> Balance General
-            </a>
-
-            <div class="nav-section">Ajustes</div>
-            <a href="{{ url_for('admin.ejercicios') }}" class="nav-link {% if request.endpoint and 'ejercicio' in request.endpoint %}active{% endif %}">
-                <i class="bi bi-calendar-range"></i> Ejercicios
-            </a>
-            <a href="{{ url_for('ajustes.indices') }}" class="nav-link {% if request.blueprint == 'ajustes' %}active{% endif %}">
-                <i class="bi bi-graph-up"></i> Indices Inflacion
-            </a>
-            <a href="{{ url_for('ajustes.ajustar') }}" class="nav-link">
-                <i class="bi bi-sliders"></i> Ajuste por Inflacion
-            </a>
-
+        <!-- Menu Bar -->
+        <div class="xp-menubar">
+            <a href="{{ url_for('auth.dashboard') }}" class="xp-menu-item">Inicio</a>
+            <a href="{{ url_for('cuentas.index') }}" class="xp-menu-item">Cuentas</a>
+            <a href="{{ url_for('asientos.index') }}" class="xp-menu-item">Asientos</a>
+            <a href="{{ url_for('informes.libro_diario') }}" class="xp-menu-item">Informes</a>
+            <a href="{{ url_for('ajustes.indices') }}" class="xp-menu-item">Ajustes</a>
             {% if current_user.is_admin %}
-            <div class="nav-section">Administracion</div>
-            <a href="{{ url_for('admin.empresas') }}" class="nav-link">
-                <i class="bi bi-building"></i> Empresas
-            </a>
-            <a href="{{ url_for('admin.usuarios') }}" class="nav-link">
-                <i class="bi bi-people"></i> Usuarios
-            </a>
+            <a href="{{ url_for('admin.empresas') }}" class="xp-menu-item">Admin</a>
             {% endif %}
         </div>
-    </nav>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Top Navbar -->
-        <nav class="top-navbar navbar navbar-expand-lg">
-            <div class="container-fluid">
-                <span class="navbar-text me-auto">
-                    {% if empresa_actual %}
-                        <i class="bi bi-building"></i>
-                        {{ empresa_actual.nombre }}
-                    {% else %}
-                        <i class="bi bi-building text-muted"></i>
-                        <span class="text-muted">Sin Empresa</span>
-                    {% endif %}
-                </span>
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle"></i> {{ current_user.nombre or current_user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('auth.select_empresa') }}">
-                                    <i class="bi bi-building"></i> Cambiar Empresa
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('auth.change_password') }}">
-                                    <i class="bi bi-key"></i> Cambiar Contraseña
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
-                                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesion
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-
-        <!-- Page Content -->
-        <div class="content-wrapper">
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            {% block content %}{% endblock %}
+        <!-- Toolbar -->
+        <div class="xp-toolbar">
+            <button class="xp-toolbar-btn" onclick="history.back()">
+                <i class="bi bi-arrow-left"></i> Atras
+            </button>
+            <button class="xp-toolbar-btn" onclick="history.forward()">
+                <i class="bi bi-arrow-right"></i> Adelante
+            </button>
+            <div class="xp-toolbar-separator"></div>
+            <button class="xp-toolbar-btn" onclick="location.reload()">
+                <i class="bi bi-arrow-clockwise"></i> Actualizar
+            </button>
+            <button class="xp-toolbar-btn" onclick="window.print()">
+                <i class="bi bi-printer"></i> Imprimir
+            </button>
+            <div class="xp-toolbar-separator"></div>
+            <a href="{{ url_for('auth.select_empresa') }}" class="xp-toolbar-btn">
+                <i class="bi bi-building"></i> Cambiar Empresa
+            </a>
         </div>
-    </main>
+
+        <!-- Main Area -->
+        <div class="xp-main">
+            <!-- Sidebar -->
+            <div class="xp-sidebar">
+                <div class="xp-task-group">
+                    <div class="xp-task-header">
+                        <i class="bi bi-house"></i> Navegacion
+                    </div>
+                    <div class="xp-task-content">
+                        <a href="{{ url_for('auth.dashboard') }}" class="xp-task-link {% if request.endpoint == 'auth.dashboard' %}active{% endif %}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                        <a href="{{ url_for('auth.select_empresa') }}" class="xp-task-link">
+                            <i class="bi bi-building"></i> Cambiar Empresa
+                        </a>
+                    </div>
+                </div>
+
+                <div class="xp-task-group">
+                    <div class="xp-task-header">
+                        <i class="bi bi-journal-text"></i> Contabilidad
+                    </div>
+                    <div class="xp-task-content">
+                        <a href="{{ url_for('cuentas.index') }}" class="xp-task-link {% if request.blueprint == 'cuentas' %}active{% endif %}">
+                            <i class="bi bi-list-nested"></i> Plan de Cuentas
+                        </a>
+                        <a href="{{ url_for('asientos.index') }}" class="xp-task-link {% if request.blueprint == 'asientos' %}active{% endif %}">
+                            <i class="bi bi-journal-text"></i> Asientos
+                        </a>
+                    </div>
+                </div>
+
+                <div class="xp-task-group">
+                    <div class="xp-task-header">
+                        <i class="bi bi-file-text"></i> Informes
+                    </div>
+                    <div class="xp-task-content">
+                        <a href="{{ url_for('informes.libro_diario') }}" class="xp-task-link">
+                            <i class="bi bi-file-text"></i> Libro Diario
+                        </a>
+                        <a href="{{ url_for('informes.libro_mayor') }}" class="xp-task-link">
+                            <i class="bi bi-file-earmark-text"></i> Libro Mayor
+                        </a>
+                        <a href="{{ url_for('informes.sumas_saldos') }}" class="xp-task-link">
+                            <i class="bi bi-calculator"></i> Sumas y Saldos
+                        </a>
+                        <a href="{{ url_for('informes.balance_general') }}" class="xp-task-link">
+                            <i class="bi bi-pie-chart"></i> Balance General
+                        </a>
+                    </div>
+                </div>
+
+                <div class="xp-task-group">
+                    <div class="xp-task-header">
+                        <i class="bi bi-gear"></i> Ajustes
+                    </div>
+                    <div class="xp-task-content">
+                        <a href="{{ url_for('admin.ejercicios') }}" class="xp-task-link">
+                            <i class="bi bi-calendar-range"></i> Ejercicios
+                        </a>
+                        <a href="{{ url_for('ajustes.indices') }}" class="xp-task-link">
+                            <i class="bi bi-graph-up"></i> Indices Inflacion
+                        </a>
+                        <a href="{{ url_for('ajustes.ajustar') }}" class="xp-task-link">
+                            <i class="bi bi-sliders"></i> Ajuste por Inflacion
+                        </a>
+                    </div>
+                </div>
+
+                {% if current_user.is_admin %}
+                <div class="xp-task-group">
+                    <div class="xp-task-header">
+                        <i class="bi bi-shield-lock"></i> Administracion
+                    </div>
+                    <div class="xp-task-content">
+                        <a href="{{ url_for('admin.empresas') }}" class="xp-task-link">
+                            <i class="bi bi-building"></i> Empresas
+                        </a>
+                        <a href="{{ url_for('admin.usuarios') }}" class="xp-task-link">
+                            <i class="bi bi-people"></i> Usuarios
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Content -->
+            <div class="xp-content">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="xp-alert xp-alert-{{ category }}">
+                                {% if category == 'success' %}<i class="bi bi-check-circle"></i>
+                                {% elif category == 'danger' %}<i class="bi bi-x-circle"></i>
+                                {% elif category == 'warning' %}<i class="bi bi-exclamation-triangle"></i>
+                                {% else %}<i class="bi bi-info-circle"></i>{% endif %}
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="xp-statusbar">
+            <span class="xp-statusbar-section">
+                <i class="bi bi-person"></i> {{ current_user.nombre or current_user.username }}
+            </span>
+            <span class="xp-statusbar-section">
+                <i class="bi bi-building"></i> {% if empresa_actual %}{{ empresa_actual.codigo }}{% else %}Sin Empresa{% endif %}
+            </span>
+            <span class="xp-statusbar-section" id="xp-clock">
+                <i class="bi bi-clock"></i> --:--
+            </span>
+        </div>
+    </div>
     {% else %}
-    <!-- Not authenticated - show content without sidebar -->
-    <main class="main-content login-page">
-        {% block login_content %}{% endblock %}
-    </main>
+    <!-- Login page - simple centered -->
+    <div class="xp-window" style="max-width: 400px; margin: 50px auto; min-height: auto;">
+        <div class="xp-titlebar">
+            <div class="xp-titlebar-text">
+                <i class="bi bi-journal-bookmark"></i> {{ app_name }} - Iniciar Sesion
+            </div>
+            <div class="xp-window-buttons">
+                <button class="xp-btn-window xp-btn-close">X</button>
+            </div>
+        </div>
+        <div style="background: var(--xp-window-bg); padding: 20px;">
+            {% block login_content %}{% endblock %}
+        </div>
+    </div>
     {% endif %}
 
     <!-- jQuery -->
@@ -357,6 +696,15 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
     <script>
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('xp-clock').innerHTML = '<i class="bi bi-clock"></i> ' + time;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
         // Initialize DataTables with Spanish language
         $.extend(true, $.fn.dataTable.defaults, {
             language: {

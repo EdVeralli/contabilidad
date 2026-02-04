@@ -34,7 +34,7 @@ env/
 *~
 
 # Environment variables
-.env
+# .env  -- included for portable deployment
 .env.local
 .env.*.local
 
@@ -42,9 +42,10 @@ env/
 instance/
 .webassets-cache
 
-# Database
-*.db
+# Database (allow vero_contable.db for portable deployment)
 *.sqlite3
+# *.db  -- commented out to include vero_contable.db with migrated data
+!vero_contable.db
 
 # Logs
 *.log
