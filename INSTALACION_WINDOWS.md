@@ -1,296 +1,347 @@
-# Guía de Instalación - Sistema Contabilidad (Windows)
+# Guia de Instalacion - Sistema Contabilidad (Windows)
 
-Esta guía explica cómo instalar el sistema de Contabilidad desde cero en una máquina Windows.
-
----
-
-## Requisitos Previos
-
-- Windows 10 o superior
-- Conexión a Internet
-- Permisos de administrador
+Esta guia explica como instalar el sistema de Contabilidad en una maquina cliente,
+incluyendo todos los datos ya migrados (empresas, cuentas, asientos, etc).
 
 ---
 
-## Paso 1: Instalar Python
+## RESUMEN RAPIDO
+
+1. Instalar Python 3.11+
+2. Copiar la carpeta `vero_contable` al cliente
+3. Crear entorno virtual
+4. Instalar dependencias
+5. Ejecutar `IniciarContabilidad.bat`
+
+---
+
+## Paso 1: Instalar Python en la maquina cliente
 
 ### 1.1 Descargar Python
 
-1. Ir a: https://www.python.org/downloads/
-2. Descargar **Python 3.11** o superior (botón amarillo "Download Python")
+1. Abrir el navegador e ir a: **https://www.python.org/downloads/**
+2. Click en el boton amarillo **"Download Python 3.xx"** (la version mas reciente)
+3. Guardar el archivo en Descargas
 
 ### 1.2 Instalar Python
 
-1. Ejecutar el instalador descargado
-2. **IMPORTANTE:** Marcar la casilla ✅ **"Add Python to PATH"** antes de instalar
+1. Ejecutar el archivo descargado (doble click en `python-3.xx.x-amd64.exe`)
+2. **MUY IMPORTANTE:** En la primera pantalla, marcar la casilla:
+
+   ☑ **"Add python.exe to PATH"**
+
+   (Esta opcion esta ABAJO de todo, NO olvidar marcarla!)
+
 3. Click en **"Install Now"**
-4. Esperar a que termine la instalación
+4. Esperar que termine (puede tardar 1-2 minutos)
 5. Click en **"Close"**
 
-### 1.3 Verificar instalación
+### 1.3 Verificar que Python se instalo correctamente
 
-Abrir **CMD** (Símbolo del sistema) y ejecutar:
-
-```cmd
-python --version
-```
-
-Debe mostrar algo como: `Python 3.11.x`
-
----
-
-## Paso 2: Descargar el Sistema
-
-### Opción A: Descargar como ZIP (más fácil)
-
-1. Ir a: https://github.com/EdVeralli/contabilidad
-2. Click en el botón verde **"Code"**
-3. Click en **"Download ZIP"**
-4. Extraer el ZIP en una carpeta, por ejemplo: `C:\Contabilidad`
-
-### Opción B: Clonar con Git (para desarrolladores)
-
-Si tienes Git instalado:
-
-```cmd
-cd C:\
-git clone https://github.com/EdVeralli/contabilidad.git
-cd contabilidad
-```
+1. Presionar **Windows + R**
+2. Escribir `cmd` y presionar Enter
+3. En la ventana negra, escribir:
+   ```
+   python --version
+   ```
+4. Debe mostrar algo como: `Python 3.11.9` o similar
+5. Si dice "no se reconoce como comando", reinstalar Python marcando la opcion del PATH
 
 ---
 
-## Paso 3: Crear Entorno Virtual
+## Paso 2: Copiar el Sistema al Cliente
 
-Abrir **CMD** y navegar a la carpeta del proyecto:
+### 2.1 Preparar el pendrive o carpeta de red
 
-```cmd
+En tu maquina (donde ya funciona el sistema), copiar **TODA** la carpeta:
+
+```
+C:\APE\VERO_CONTABLE\VERO CONTABLE\CONTA_2\vero_contable
+```
+
+Esta carpeta contiene:
+- `app/` - Codigo del sistema
+- `vero_contable.db` - Base de datos con TODOS los datos migrados
+- `requirements.txt` - Lista de dependencias
+- `run.py` - Archivo principal
+- `.env` - Configuracion
+- Otros archivos necesarios
+
+**IMPORTANTE:** Copiar TODO, incluyendo el archivo `vero_contable.db` que tiene los datos.
+
+### 2.2 Pegar en la maquina cliente
+
+1. Conectar el pendrive en la maquina cliente
+2. Crear una carpeta en C:\ llamada `Contabilidad`:
+   ```
+   C:\Contabilidad
+   ```
+3. Copiar TODO el contenido de la carpeta `vero_contable` dentro de `C:\Contabilidad`
+
+Al terminar, la estructura debe quedar asi:
+```
+C:\Contabilidad\
+    ├── app\
+    │   ├── blueprints\
+    │   ├── models\
+    │   ├── templates\
+    │   └── ...
+    ├── .env
+    ├── .gitignore
+    ├── IniciarContabilidad.bat
+    ├── INSTALACION_WINDOWS.md
+    ├── README.md
+    ├── requirements.txt
+    ├── run.py
+    └── vero_contable.db       <-- BASE DE DATOS CON TODOS LOS DATOS
+```
+
+---
+
+## Paso 3: Crear el Entorno Virtual
+
+**NOTA:** El entorno virtual (`venv`) NO se copia porque depende de cada maquina.
+Hay que crearlo nuevo en el cliente.
+
+### 3.1 Abrir CMD como Administrador
+
+1. Presionar **Windows + R**
+2. Escribir `cmd` y presionar **Ctrl + Shift + Enter** (esto lo abre como administrador)
+3. Si pregunta "Desea permitir...?" click en **Si**
+
+### 3.2 Navegar a la carpeta del sistema
+
+Escribir:
+```
 cd C:\Contabilidad
 ```
 
-Crear el entorno virtual:
+### 3.3 Crear el entorno virtual
 
-```cmd
+Escribir:
+```
 python -m venv venv
 ```
 
-Activar el entorno virtual:
+Esperar unos segundos. No muestra nada si funciona correctamente.
 
-```cmd
-venv\Scripts\activate
+### 3.4 Verificar que se creo
+
+Escribir:
+```
+dir venv
 ```
 
-> **Nota:** Verás `(venv)` al inicio de la línea de comandos cuando el entorno esté activo.
+Debe mostrar carpetas como `Include`, `Lib`, `Scripts`
 
 ---
 
-## Paso 4: Instalar Dependencias
+## Paso 4: Activar el Entorno Virtual e Instalar Dependencias
 
-Con el entorno virtual activado, ejecutar:
+### 4.1 Activar el entorno virtual
 
-```cmd
-pip install flask flask-sqlalchemy flask-login flask-wtf flask-migrate python-dotenv dbfread
+Escribir:
+```
+venv\Scripts\activate
 ```
 
-O si existe el archivo requirements.txt:
+Ahora debe aparecer `(venv)` al inicio de la linea:
+```
+(venv) C:\Contabilidad>
+```
 
-```cmd
+### 4.2 Instalar las dependencias
+
+Escribir:
+```
 pip install -r requirements.txt
 ```
 
----
+Esto descargara e instalara todos los paquetes necesarios.
+Puede tardar 2-5 minutos dependiendo de la conexion a internet.
 
-## Paso 5: Configurar Variables de Entorno
-
-Crear un archivo llamado `.env` en la carpeta del proyecto con el siguiente contenido:
-
+Veran muchas lineas de texto. Al final debe decir algo como:
 ```
-FLASK_APP=run.py
-FLASK_ENV=development
-FLASK_DEBUG=1
-SECRET_KEY=clave-secreta-cambiar-en-produccion
-ITEMS_PER_PAGE=20
-```
-
-> **Nota:** Puedes crear este archivo con el Bloc de notas. Guardar como "Todos los archivos" y nombrar `.env`
-
----
-
-## Paso 6: Inicializar la Base de Datos
-
-Con el entorno virtual activado:
-
-```cmd
-flask init-db
-```
-
-Debe mostrar: `Database tables created.`
-
----
-
-## Paso 7: Crear Usuario Administrador
-
-```cmd
-flask create-admin
-```
-
-Debe mostrar:
-```
-Created default company: Empresa Principal
-Created admin user (password: admin123)
+Successfully installed Flask-x.x.x ...
 ```
 
 ---
 
-## Paso 8: Migrar Datos desde Sistema Anterior (Opcional)
+## Paso 5: Probar el Sistema
 
-Si tienes archivos DBF del sistema Clipper anterior:
+### 5.1 Iniciar el servidor
 
-### 8.1 Editar la ruta de los archivos DBF
-
-Abrir el archivo `scripts/migrar_todo.py` y modificar la línea:
-
-```python
-BASE_PATH = r'C:\ruta\a\tus\archivos\DBF'
+Con el entorno virtual activado (debe verse `(venv)`), escribir:
+```
+python run.py
 ```
 
-### 8.2 Ejecutar la migración
-
-```cmd
-python scripts/migrar_todo.py
+Debe mostrar algo como:
+```
+==================================================
+  SISTEMA DE CONTABILIDAD - Vero Contable
+==================================================
+Servidor iniciando en: http://127.0.0.1:5000
 ```
 
-Esto importará automáticamente:
-- Todas las empresas
-- Plan de cuentas
-- Asientos contables
-- Tablas de inflación
+### 5.2 Abrir el navegador
+
+1. Abrir **Chrome**, **Firefox** o **Edge**
+2. Ir a la direccion: **http://127.0.0.1:5000**
+3. Debe aparecer la pantalla de login con estilo Windows XP
+
+### 5.3 Iniciar sesion
+
+- **Usuario:** `admin`
+- **Contrasena:** `admin`
+
+### 5.4 Verificar los datos
+
+1. Despues de iniciar sesion, ir a **"Cambiar Empresa"**
+2. Deben aparecer todas las empresas migradas (8 empresas)
+3. Seleccionar una empresa
+4. Ir a **"Plan de Cuentas"** - deben verse las cuentas
+5. Ir a **"Asientos"** - deben verse los asientos
 
 ---
 
-## Paso 9: Iniciar el Sistema
+## Paso 6: Crear Acceso Directo para Uso Diario
 
-```cmd
-flask run
-```
+El archivo `IniciarContabilidad.bat` ya viene configurado y funciona automaticamente
+desde cualquier carpeta donde se copie el sistema.
 
-Debe mostrar:
-```
- * Running on http://127.0.0.1:5000
-```
+### Crear acceso directo en el Escritorio
 
----
-
-## Paso 10: Acceder al Sistema
-
-1. Abrir el navegador (Chrome, Firefox, Edge)
-2. Ir a: **http://127.0.0.1:5000**
-3. Iniciar sesión con:
-   - **Usuario:** `admin`
-   - **Password:** `admin123`
-4. Seleccionar una empresa para trabajar
+1. Ir a la carpeta donde se instalo el sistema (ej: `C:\Contabilidad`)
+2. Click derecho en `IniciarContabilidad.bat`
+3. Seleccionar **"Enviar a"** → **"Escritorio (crear acceso directo)"**
+4. Ahora hay un icono en el escritorio para iniciar el sistema
 
 ---
 
-## Uso Diario
+## Uso Diario del Sistema
 
-Cada vez que quieras usar el sistema:
+### Para iniciar el sistema:
 
-### 1. Abrir CMD
+1. Doble click en **"IniciarContabilidad.bat"** (o el acceso directo)
+2. Se abre una ventana negra (CMD) - NO CERRARLA
+3. Se abre automaticamente el navegador con el sistema
+4. Iniciar sesion con usuario y contrasena
 
-### 2. Navegar a la carpeta del proyecto
-```cmd
-cd C:\Contabilidad
-```
+### Para cerrar el sistema:
 
-### 3. Activar el entorno virtual
-```cmd
-venv\Scripts\activate
-```
+1. Cerrar el navegador
+2. En la ventana negra (CMD), presionar **Ctrl + C**
+3. Cerrar la ventana
 
-### 4. Iniciar el servidor
-```cmd
-flask run
-```
+### IMPORTANTE:
 
-### 5. Abrir el navegador en http://127.0.0.1:5000
+- La ventana negra debe permanecer abierta mientras se usa el sistema
+- Si se cierra la ventana negra, el sistema deja de funcionar
 
 ---
 
-## Crear Acceso Directo (Opcional)
+## Datos Incluidos
 
-Para facilitar el inicio diario, puedes crear un archivo `.bat`:
+El sistema ya incluye todos los datos migrados:
 
-1. Abrir el Bloc de notas
-2. Pegar el siguiente contenido:
-
-```batch
-@echo off
-cd /d C:\Contabilidad
-call venv\Scripts\activate
-start http://127.0.0.1:5000
-flask run
-```
-
-3. Guardar como `IniciarContabilidad.bat` en el Escritorio
-4. Doble click para iniciar el sistema
+| Contenido | Cantidad |
+|-----------|----------|
+| Empresas | 8 |
+| Cuentas contables | 805+ |
+| Asientos | 6162+ |
+| Ejercicios fiscales | Varios |
 
 ---
 
-## Solución de Problemas
+## Credenciales de Acceso
+
+| Usuario | Contrasena | Rol |
+|---------|------------|-----|
+| admin | admin | Administrador |
+
+**RECOMENDACION:** Cambiar la contrasena despues de la primera instalacion.
+(Menu usuario → Cambiar Contrasena)
+
+---
+
+## Solucion de Problemas
 
 ### "python" no se reconoce como comando
 
-- Reinstalar Python marcando la opción **"Add Python to PATH"**
-- O agregar Python al PATH manualmente:
-  1. Buscar "Variables de entorno" en Windows
-  2. Editar la variable PATH
-  3. Agregar: `C:\Users\TU_USUARIO\AppData\Local\Programs\Python\Python311\`
+**Causa:** Python no se agrego al PATH durante la instalacion.
 
-### Error al instalar dependencias
+**Solucion:**
+1. Desinstalar Python (Panel de control → Programas)
+2. Volver a instalar Python
+3. MARCAR la opcion **"Add python.exe to PATH"**
 
-Actualizar pip:
-```cmd
-python -m pip install --upgrade pip
-```
+---
 
-### El servidor no inicia
+### Error "No module named flask" o similar
 
-Verificar que el entorno virtual esté activado (debe verse `(venv)` en la línea de comandos)
+**Causa:** Las dependencias no se instalaron correctamente.
 
-### Error de base de datos
+**Solucion:**
+1. Abrir CMD
+2. Navegar a la carpeta: `cd C:\Contabilidad`
+3. Activar entorno: `venv\Scripts\activate`
+4. Reinstalar: `pip install -r requirements.txt`
 
-Eliminar el archivo `vero_contable.db` y volver a ejecutar:
-```cmd
-flask init-db
-flask create-admin
-```
+---
+
+### El navegador muestra "No se puede acceder a este sitio"
+
+**Causa:** El servidor no esta corriendo.
+
+**Solucion:**
+1. Verificar que la ventana negra (CMD) este abierta
+2. Verificar que diga "Servidor iniciando en..."
+3. Si hay error, leer el mensaje y buscar la solucion
+
+---
+
+### La base de datos esta vacia (no hay empresas)
+
+**Causa:** No se copio el archivo `vero_contable.db`
+
+**Solucion:**
+1. Verificar que existe el archivo `C:\Contabilidad\vero_contable.db`
+2. El archivo debe tener aproximadamente 2.3 MB de tamano
+3. Si no existe, copiar desde la maquina original
+
+---
 
 ### Puerto 5000 en uso
 
-Usar otro puerto:
-```cmd
-flask run --port 5001
-```
+**Causa:** Otro programa esta usando el puerto 5000.
 
-Y acceder a: http://127.0.0.1:5001
-
----
-
-## Credenciales por Defecto
-
-| Usuario | Contraseña |
-|---------|------------|
-| admin   | admin123   |
-
-> **IMPORTANTE:** Cambiar la contraseña después del primer inicio de sesión.
+**Solucion:**
+1. Editar el archivo `run.py`
+2. Buscar la linea que dice `port=5000`
+3. Cambiar por `port=5001`
+4. Acceder a: http://127.0.0.1:5001
 
 ---
 
-## Soporte
+## Resumen de Archivos Importantes
 
-Repositorio: https://github.com/EdVeralli/contabilidad
+| Archivo | Descripcion |
+|---------|-------------|
+| `vero_contable.db` | Base de datos SQLite con todos los datos |
+| `run.py` | Archivo principal para iniciar el servidor |
+| `.env` | Configuracion del sistema |
+| `requirements.txt` | Lista de dependencias de Python |
+| `IniciarContabilidad.bat` | Script para iniciar facilmente |
+| `app/templates/base.html` | Template visual (tema Windows XP) |
 
 ---
 
-*Documento generado para Sistema Contabilidad v1.0*
+## Contacto / Soporte
+
+En caso de problemas, contactar al administrador del sistema.
+
+---
+
+*Sistema Contabilidad - Vero Contable v1.0*
+*Tema visual: Windows XP Luna*
