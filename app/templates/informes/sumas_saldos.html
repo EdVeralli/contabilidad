@@ -16,8 +16,28 @@
     <div class="card-body">
         <form method="GET" class="row g-3">
             <div class="col-md-3">
-                <label class="form-label">Fecha de Corte</label>
-                <input type="date" class="form-control" name="fecha_hasta"
+                <label class="form-label">Ejercicio</label>
+                <select class="form-select" name="ejercicio_id" id="ejercicio_select">
+                    <option value="">-- Seleccionar Ejercicio --</option>
+                    {% for ej in ejercicios %}
+                    <option value="{{ ej.id }}"
+                            data-inicio="{{ ej.fecha_inicio.strftime('%Y-%m-%d') }}"
+                            data-fin="{{ ej.fecha_fin.strftime('%Y-%m-%d') }}"
+                            {{ 'selected' if ejercicio_seleccionado and ejercicio_seleccionado.id == ej.id }}>
+                        {{ ej.anio }} ({{ ej.fecha_inicio.strftime('%d/%m/%Y') }} - {{ ej.fecha_fin.strftime('%d/%m/%Y') }})
+                        {% if ej.cerrado %} [Cerrado]{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Fecha Desde</label>
+                <input type="date" class="form-control" name="fecha_desde" id="fecha_desde"
+                       value="{{ fecha_desde.strftime('%Y-%m-%d') if fecha_desde else '' }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Fecha Hasta</label>
+                <input type="date" class="form-control" name="fecha_hasta" id="fecha_hasta"
                        value="{{ fecha_hasta.strftime('%Y-%m-%d') }}">
             </div>
             <div class="col-md-3 d-flex align-items-end">
@@ -40,7 +60,14 @@
 <div class="card">
     <div class="card-header text-center">
         <h4 class="mb-0">BALANCE DE SUMAS Y SALDOS</h4>
-        <small>Al {{ fecha_hasta.strftime('%d/%m/%Y') }}</small>
+        <small>
+            {% if fecha_desde %}
+                Del {{ fecha_desde.strftime('%d/%m/%Y') }} al {{ fecha_hasta.strftime('%d/%m/%Y') }}
+                {% if ejercicio_seleccionado %} - Ejercicio {{ ejercicio_seleccionado.anio }}{% endif %}
+            {% else %}
+                Al {{ fecha_hasta.strftime('%d/%m/%Y') }} (Todos los ejercicios)
+            {% endif %}
+        </small>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -113,4 +140,16 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('ejercicio_select').addEventListener('change', function() {
+    var selected = this.options[this.selectedIndex];
+    if (selected.value) {
+        document.getElementById('fecha_desde').value = selected.dataset.inicio;
+        document.getElementById('fecha_hasta').value = selected.dataset.fin;
+    }
+});
+</script>
 {% endblock %}

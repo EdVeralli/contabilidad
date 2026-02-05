@@ -160,11 +160,12 @@ class ReporteService:
         return resultado
 
     @staticmethod
-    def sumas_saldos(empresa_id, fecha_hasta, incluir_cuentas_sin_movimiento=False):
+    def sumas_saldos(empresa_id, fecha_desde, fecha_hasta, incluir_cuentas_sin_movimiento=False):
         """Generate trial balance report (Sumas y Saldos).
 
         Args:
             empresa_id: Company ID
+            fecha_desde: Start date (None to include all from beginning)
             fecha_hasta: End date
             incluir_cuentas_sin_movimiento: Include accounts with zero balance
 
@@ -185,15 +186,21 @@ class ReporteService:
         total_saldo_acreedor = Decimal('0')
 
         for cuenta in cuentas_query.all():
-            # Calculate totals from movements up to fecha_hasta
-            totales = db.session.query(
+            # Build query for movements
+            query = db.session.query(
                 func.coalesce(func.sum(AsientoLinea.debe), 0).label('total_debe'),
                 func.coalesce(func.sum(AsientoLinea.haber), 0).label('total_haber')
             ).join(Asiento).filter(
                 AsientoLinea.cuenta_id == cuenta.id,
                 Asiento.fecha <= fecha_hasta,
                 Asiento.estado == EstadoAsiento.ACTIVO
-            ).first()
+            )
+
+            # Add fecha_desde filter if provided
+            if fecha_desde:
+                query = query.filter(Asiento.fecha >= fecha_desde)
+
+            totales = query.first()
 
             debe = totales.total_debe or Decimal('0')
             haber = totales.total_haber or Decimal('0')
@@ -234,11 +241,12 @@ class ReporteService:
         }
 
     @staticmethod
-    def balance_general(empresa_id, fecha_hasta):
+    def balance_general(empresa_id, fecha_desde, fecha_hasta):
         """Generate general balance report with hierarchical structure.
 
         Args:
             empresa_id: Company ID
+            fecha_desde: Start date (None to include all from beginning)
             fecha_hasta: End date
 
         Returns:
@@ -254,14 +262,19 @@ class ReporteService:
         saldos = {}
         for cuenta in cuentas:
             if cuenta.imputable == 'S':
-                totales = db.session.query(
+                query = db.session.query(
                     func.coalesce(func.sum(AsientoLinea.debe), 0).label('total_debe'),
                     func.coalesce(func.sum(AsientoLinea.haber), 0).label('total_haber')
                 ).join(Asiento).filter(
                     AsientoLinea.cuenta_id == cuenta.id,
                     Asiento.fecha <= fecha_hasta,
                     Asiento.estado == EstadoAsiento.ACTIVO
-                ).first()
+                )
+
+                if fecha_desde:
+                    query = query.filter(Asiento.fecha >= fecha_desde)
+
+                totales = query.first()
 
                 saldo = (totales.total_debe or 0) - (totales.total_haber or 0)
                 saldos[cuenta.cuenta] = float(saldo)

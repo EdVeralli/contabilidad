@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 from flask import render_template, redirect, url_for, flash, request, jsonify, session
 from flask_login import login_required, current_user
 from app.extensions import db
-from app.models import Asiento, AsientoLinea, Plan, EstadoAsiento
+from app.models import Asiento, AsientoLinea, Plan, EstadoAsiento, Ejercicio
 from app.services import AsientoService, SaldoService
 from app.services.asiento_service import ValidationError
 from . import asientos_bp
@@ -15,6 +15,11 @@ def get_empresa_id():
     return session.get('empresa_id')
 
 
+def get_ejercicios(empresa_id):
+    """Get all ejercicios for empresa ordered by year desc."""
+    return Ejercicio.query.filter_by(empresa_id=empresa_id).order_by(Ejercicio.anio.desc()).all()
+
+
 @asientos_bp.route('/')
 @login_required
 def index():
@@ -24,7 +29,19 @@ def index():
         flash('Debe seleccionar una empresa.', 'warning')
         return redirect(url_for('auth.select_empresa'))
 
+    # Get ejercicios for selector
+    ejercicios = get_ejercicios(empresa_id)
+
     form = BusquedaAsientoForm(request.args)
+
+    # Check if ejercicio was selected
+    ejercicio_id = request.args.get('ejercicio_id', type=int)
+    ejercicio_seleccionado = None
+    if ejercicio_id:
+        ejercicio_seleccionado = Ejercicio.query.get(ejercicio_id)
+        if ejercicio_seleccionado:
+            form.fecha_desde.data = ejercicio_seleccionado.fecha_inicio
+            form.fecha_hasta.data = ejercicio_seleccionado.fecha_fin
 
     # Default date range: current month
     if not form.fecha_desde.data:
@@ -64,7 +81,11 @@ def index():
         Asiento.numero.desc()
     ).paginate(page=page, per_page=30, error_out=False)
 
-    return render_template('asientos/index.html', asientos=asientos, form=form)
+    return render_template('asientos/index.html',
+                          asientos=asientos,
+                          form=form,
+                          ejercicios=ejercicios,
+                          ejercicio_seleccionado=ejercicio_seleccionado)
 
 
 @asientos_bp.route('/create', methods=['GET', 'POST'])

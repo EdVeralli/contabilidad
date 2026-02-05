@@ -15,17 +15,31 @@
     <div class="card-body">
         <form method="GET" class="row g-3">
             <div class="col-md-2">
+                <label class="form-label">Ejercicio</label>
+                <select class="form-select" name="ejercicio_id" id="ejercicio_select">
+                    <option value="">-- Todos --</option>
+                    {% for ej in ejercicios %}
+                    <option value="{{ ej.id }}"
+                            data-inicio="{{ ej.fecha_inicio.strftime('%Y-%m-%d') }}"
+                            data-fin="{{ ej.fecha_fin.strftime('%Y-%m-%d') }}"
+                            {{ 'selected' if ejercicio_seleccionado and ejercicio_seleccionado.id == ej.id }}>
+                        {{ ej.anio }}{% if ej.cerrado %} [Cerrado]{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
                 <label class="form-label">Desde</label>
-                <input type="date" class="form-control" name="fecha_desde"
+                <input type="date" class="form-control" name="fecha_desde" id="fecha_desde"
                        value="{{ form.fecha_desde.data.strftime('%Y-%m-%d') if form.fecha_desde.data else '' }}">
             </div>
             <div class="col-md-2">
                 <label class="form-label">Hasta</label>
-                <input type="date" class="form-control" name="fecha_hasta"
+                <input type="date" class="form-control" name="fecha_hasta" id="fecha_hasta"
                        value="{{ form.fecha_hasta.data.strftime('%Y-%m-%d') if form.fecha_hasta.data else '' }}">
             </div>
-            <div class="col-md-2">
-                <label class="form-label">Numero</label>
+            <div class="col-md-1">
+                <label class="form-label">Nro</label>
                 {{ form.numero(class="form-control", placeholder="Nro") }}
             </div>
             <div class="col-md-2">
@@ -36,9 +50,9 @@
                 <label class="form-label">Leyenda</label>
                 {{ form.leyenda(class="form-control", placeholder="Buscar...") }}
             </div>
-            <div class="col-md-2 d-flex align-items-end">
+            <div class="col-md-1 d-flex align-items-end">
                 <button type="submit" class="btn btn-secondary w-100">
-                    <i class="bi bi-search"></i> Buscar
+                    <i class="bi bi-search"></i>
                 </button>
             </div>
         </form>
@@ -143,4 +157,16 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('ejercicio_select').addEventListener('change', function() {
+    var selected = this.options[this.selectedIndex];
+    if (selected.value) {
+        document.getElementById('fecha_desde').value = selected.dataset.inicio;
+        document.getElementById('fecha_hasta').value = selected.dataset.fin;
+    }
+});
+</script>
 {% endblock %}
