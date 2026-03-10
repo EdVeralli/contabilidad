@@ -44,13 +44,14 @@ class ProductionConfig(Config):
     """Production configuration."""
 
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URL',
+        'sqlite:///' + os.path.join(Config.BASE_DIR, 'vero_contable.db')
+    )
     SQLALCHEMY_ECHO = False
 
     # Security
-    SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
-    REMEMBER_COOKIE_SECURE = True
 
 
 class TestingConfig(Config):
