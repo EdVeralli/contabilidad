@@ -154,8 +154,11 @@ Ahora debe aparecer `(venv)` al inicio de la linea:
 
 Escribir:
 ```
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
+
+**IMPORTANTE:** Usar `python -m pip` y NO `pip` directamente, ya que en Windows puede dar el error
+"Fatal error in launcher: Unable to create process".
 
 Esto descargara e instalara todos los paquetes necesarios.
 Puede tardar 2-5 minutos dependiendo de la conexion a internet.
