@@ -196,7 +196,7 @@ Servidor iniciando en: http://127.0.0.1:5000
 ### 5.3 Iniciar sesion
 
 - **Usuario:** `admin`
-- **Contrasena:** `admin`
+- **Contrasena:** `admin123`
 
 ### 5.4 Verificar los datos
 
@@ -261,7 +261,7 @@ El sistema ya incluye todos los datos migrados:
 
 | Usuario | Contrasena | Rol |
 |---------|------------|-----|
-| admin | admin | Administrador |
+| admin | admin123 | Administrador |
 
 **RECOMENDACION:** Cambiar la contrasena despues de la primera instalacion.
 (Menu usuario → Cambiar Contrasena)
