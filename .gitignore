@@ -69,3 +69,5 @@ uploads/
 
 # Static files (compiled)
 app/static/dist/
+
+backups/
