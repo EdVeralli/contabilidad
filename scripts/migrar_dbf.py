@@ -130,8 +130,8 @@ def migrar_transacciones(empresa_id, dbf_path):
         LEYENDA   C(50)  - Description
         APERTURA  C(1)   - S if opening entry
     """
-    # Try different possible file names
-    trans_files = ['MOVIM.DBF', 'TRANS.DBF', 'TRANSAC.DBF']
+    # Try different possible file names (TRANSACC.DBF es el real del sistema APE)
+    trans_files = ['TRANSACC.DBF', 'MOVIM.DBF', 'TRANS.DBF', 'TRANSAC.DBF']
     records = []
 
     for filename in trans_files:
@@ -149,6 +149,35 @@ def migrar_transacciones(empresa_id, dbf_path):
 
     # Build lookup for accounts
     cuentas = {p.cuenta: p.id for p in Plan.query.filter_by(empresa_id=empresa_id).all()}
+
+    # Pre-pasada: detectar cuentas huerfanas (usadas en TRANSACC pero no en PLAN)
+    cuentas_huerfanas = set()
+    for record in records:
+        c = str(record.get('CUENTA', '')).strip()
+        if c and c not in cuentas and len(c) >= 2:  # ignorar basura muy corta
+            cuentas_huerfanas.add(c)
+
+    # Crear automaticamente las cuentas huerfanas con nombre generico
+    if cuentas_huerfanas:
+        log(f'Detectadas {len(cuentas_huerfanas)} cuentas huerfanas - creando automaticamente...', 'WARNING')
+        for codigo in sorted(cuentas_huerfanas):
+            nueva = Plan(
+                empresa_id=empresa_id,
+                cuenta=codigo,
+                nombre=f'(RECUPERADA) Cuenta {codigo}',
+                nivel=len(codigo),
+                imputable='S',
+                monetaria='N',
+                ajustable='N',
+                tipo_saldo='D',
+                ultimo_saldo=Decimal('0'),
+                activa=True
+            )
+            db.session.add(nueva)
+        db.session.commit()
+        # Refrescar lookup
+        cuentas = {p.cuenta: p.id for p in Plan.query.filter_by(empresa_id=empresa_id).all()}
+        log(f'Cuentas huerfanas creadas: {sorted(cuentas_huerfanas)}')
 
     # Group by nucontrol
     asientos_dict = {}
@@ -169,7 +198,8 @@ def migrar_transacciones(empresa_id, dbf_path):
             cuenta_id = cuentas.get(cuenta_codigo)
 
             if not cuenta_id:
-                log(f'Cuenta no encontrada: {cuenta_codigo} en asiento {nucontrol}', 'WARNING')
+                # Solo loguear basura muy corta ('.', 'o', '6')
+                log(f'Cuenta ignorada (basura): "{cuenta_codigo}" en asiento {nucontrol}', 'WARNING')
                 continue
 
             importe = Decimal(str(record.get('IMPORTE', 0) or 0))
