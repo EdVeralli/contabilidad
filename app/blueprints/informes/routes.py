@@ -142,6 +142,7 @@ def sumas_saldos():
     fecha_desde = request.args.get('fecha_desde')
     fecha_hasta = request.args.get('fecha_hasta')
     incluir_sin_mov = request.args.get('incluir_sin_mov', 'false') == 'true'
+    solo_con_saldo = request.args.get('solo_con_saldo', 'false') == 'true'
 
     # If ejercicio selected, use its dates
     ejercicio_seleccionado = None
@@ -164,7 +165,7 @@ def sumas_saldos():
         fecha_desde = None  # Will include all movements from the beginning
 
     # Generate report
-    reporte = ReporteService.sumas_saldos(empresa_id, fecha_desde, fecha_hasta, incluir_sin_mov)
+    reporte = ReporteService.sumas_saldos(empresa_id, fecha_desde, fecha_hasta, incluir_sin_mov, solo_con_saldo)
 
     return render_template(
         'informes/sumas_saldos.html',
@@ -173,7 +174,8 @@ def sumas_saldos():
         ejercicio_seleccionado=ejercicio_seleccionado,
         fecha_desde=fecha_desde,
         fecha_hasta=fecha_hasta,
-        incluir_sin_mov=incluir_sin_mov
+        incluir_sin_mov=incluir_sin_mov,
+        solo_con_saldo=solo_con_saldo
     )
 
 

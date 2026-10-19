@@ -160,14 +160,15 @@ class ReporteService:
         return resultado
 
     @staticmethod
-    def sumas_saldos(empresa_id, fecha_desde, fecha_hasta, incluir_cuentas_sin_movimiento=False):
+    def sumas_saldos(empresa_id, fecha_desde, fecha_hasta, incluir_cuentas_sin_movimiento=False, solo_con_saldo=False):
         """Generate trial balance report (Sumas y Saldos).
 
         Args:
             empresa_id: Company ID
             fecha_desde: Start date (None to include all from beginning)
             fecha_hasta: End date
-            incluir_cuentas_sin_movimiento: Include accounts with zero balance
+            incluir_cuentas_sin_movimiento: Include accounts with zero movement
+            solo_con_saldo: If True, only include accounts where saldo != 0 (Debe != Haber)
 
         Returns:
             List of accounts with debit/credit sums and balances
@@ -208,6 +209,10 @@ class ReporteService:
 
             # Skip if no movements and not requested
             if not incluir_cuentas_sin_movimiento and debe == 0 and haber == 0:
+                continue
+
+            # Skip if solo_con_saldo and the saldo is zero (debe == haber)
+            if solo_con_saldo and diferencia == 0:
                 continue
 
             # Determine debit or credit balance

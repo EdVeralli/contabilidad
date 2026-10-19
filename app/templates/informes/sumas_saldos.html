@@ -41,10 +41,17 @@
                        value="{{ fecha_hasta.strftime('%Y-%m-%d') }}">
             </div>
             <div class="col-md-3 d-flex align-items-end">
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" name="incluir_sin_mov"
-                           value="true" {{ 'checked' if incluir_sin_mov }}>
-                    <label class="form-check-label">Incluir cuentas sin movimiento</label>
+                <div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="incluir_sin_mov"
+                               value="true" {{ 'checked' if incluir_sin_mov }}>
+                        <label class="form-check-label">Incluir cuentas sin movimiento</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="solo_con_saldo"
+                               value="true" {{ 'checked' if solo_con_saldo }}>
+                        <label class="form-check-label">Solo cuentas con saldo</label>
+                    </div>
                 </div>
             </div>
             <div class="col-md-2 d-flex align-items-end">
